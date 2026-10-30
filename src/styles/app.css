@@ -2062,3 +2062,11 @@ body {
 .local-graph-pane .graph-controls {
   --graph-controls-width: 220px;
 }
+
+.graph-controls .slider {
+  accent-color: var(--interactive-accent);
+}
+
+.graph-controls .mod-search-setting .setting-item-info {
+  display: none;
+}

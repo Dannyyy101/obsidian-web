@@ -339,7 +339,7 @@ export class GraphRenderer {
     }
 
     // Beschriftungen: blenden beim Herauszoomen aus; die Umgebung des Hover-Knotens bleibt lesbar.
-    const fadeStart = 0.45 * Math.pow(1.6, display.textFadeMultiplier);
+    const fadeStart = 0.3 * Math.pow(1.6, display.textFadeMultiplier);
     const zoomAlpha = Math.min(1, Math.max(0, (this.scale - fadeStart) / (fadeStart * 0.6)));
     const fontSize = Math.max(10, Math.min(16, 13 * Math.sqrt(this.scale)));
     ctx.font = `${fontSize}px ${getComputedStyle(this.containerEl).fontFamily}`;

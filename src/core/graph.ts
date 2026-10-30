@@ -379,11 +379,11 @@ export class ForceSimulation {
     }
     const root = newQuad(minX, minY, Math.max(maxX - minX, maxY - minY, 1) + 1);
     for (const n of nodes) insert(root, n);
-    const charge = repelStrength * 20 * alpha;
+    const charge = repelStrength * 60 * alpha;
     for (const n of nodes) this.repel(root, n, charge);
 
     // Zug zur Mitte, damit unverbundene Teile nicht davontreiben.
-    const center = centerStrength * 0.2 * alpha;
+    const center = centerStrength * 0.1 * alpha;
     for (const n of nodes) {
       n.vx -= n.x * center;
       n.vy -= n.y * center;

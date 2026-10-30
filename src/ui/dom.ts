@@ -1,5 +1,6 @@
 // Obsidians DOM-Erweiterungen (createEl, empty, toggleClass …) als Prototyp-Methoden und Globals.
 // Community-Plugins setzen sie voraus.
+import { installGlobalExtensions } from "../shared/globals";
 
 export interface DomElementInfo {
   cls?: string | string[];
@@ -89,6 +90,9 @@ function createElement<K extends keyof HTMLElementTagNameMap>(
 }
 
 export function installDomExtensions() {
+  // Die Erweiterungen von String, Array, Math … gehören zur selben globalen Plugin-Umgebung.
+  installGlobalExtensions();
+
   const node = Node.prototype;
   node.empty = function () {
     while (this.firstChild) this.removeChild(this.firstChild);

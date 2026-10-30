@@ -6,8 +6,8 @@
 # Start:  cp .env.example .env  # Werte eintragen
 #         docker compose up -d --build
 #
-# Dein Reverse Proxy (TLS) leitet ${PUBLIC_HOST} auf oauth2-proxy:4180 weiter
-# (bzw. auf 127.0.0.1:4180, wenn er nicht im selben Docker-Netz läuft).
+# Der Cloudflare-Tunnel (cloudflared auf dem Host) leitet ${PUBLIC_HOST} auf http://127.0.0.1:4180
+# weiter – bewusst IPv4, weil der Port nur auf 127.0.0.1 veröffentlicht ist.
 services:
   obsidian-web:
     build: ..

@@ -34,14 +34,16 @@ const MIME: Record<string, string> = {
   ".webmanifest": "application/manifest+json",
 };
 
-function proxyTargetAllowed(req: IncomingMessage): boolean {
-  if (!ALLOWED_HOSTS.length) return true;
+/** Gibt den abgelehnten Ziel-Host zurück, oder undefined, wenn der Request durchdarf. */
+function blockedProxyHost(req: IncomingMessage): string | undefined {
+  if (!ALLOWED_HOSTS.length) return undefined;
   const target = req.headers["x-proxy-target"];
-  if (typeof target !== "string") return true; // handleProxyRequest antwortet mit 400
+  if (typeof target !== "string") return undefined; // handleProxyRequest antwortet mit 400
   try {
-    return ALLOWED_HOSTS.includes(new URL(target).hostname.toLowerCase());
+    const host = new URL(target).hostname.toLowerCase();
+    return ALLOWED_HOSTS.includes(host) ? undefined : host;
   } catch {
-    return true;
+    return undefined;
   }
 }
 
@@ -91,9 +93,10 @@ const server = createServer((req, res) => {
     return;
   }
   if (pathname === PROXY_PATH) {
-    if (!proxyTargetAllowed(req)) {
+    const blocked = blockedProxyHost(req);
+    if (blocked) {
       res.statusCode = 403;
-      res.end("proxy target not allowed");
+      res.end(`proxy target not allowed: ${blocked} (PROXY_ALLOWED_HOSTS)`);
       return;
     }
     void handleProxyRequest(req, res);
