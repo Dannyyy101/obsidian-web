@@ -12,6 +12,7 @@ import { QuickSwitcher } from "../ui/quick-switcher";
 import { setIcon } from "../ui/icons";
 import { Sidebar } from "../ui/sidebar";
 import { BacklinksView } from "../ui/views/backlinks-view";
+import { GRAPH_VIEW_TYPE, GraphView, LocalGraphView } from "../ui/views/graph-view";
 import { OutgoingLinksView } from "../ui/views/outgoing-links-view";
 import { OutlineView } from "../ui/views/outline-view";
 import { SearchView } from "../ui/views/search-view";
@@ -63,6 +64,8 @@ export class App {
     this.addIndexView(this.rightSidebar, new BacklinksView(this));
     this.addIndexView(this.rightSidebar, new OutgoingLinksView(this));
     this.addIndexView(this.rightSidebar, new OutlineView(this));
+    this.addIndexView(this.rightSidebar, new LocalGraphView(this));
+    this.workspace.registerView(GRAPH_VIEW_TYPE, () => new GraphView(this));
     this.addSidebarToggle(this.workspace.tabBarLeftEl, this.leftSidebar, "panel-left", "Linke Seitenleiste");
     this.addSidebarToggle(this.workspace.tabBarRightEl, this.rightSidebar, "panel-right", "Rechte Seitenleiste");
     // Ungespeicherte Änderungen aller Tabs schreiben, bevor Links in Dateien angepasst werden.
@@ -72,6 +75,7 @@ export class App {
       await Promise.all(editors.map((e) => e.save()));
     };
 
+    this.workspace.addRibbonIcon("git-fork", "Graph-Ansicht öffnen", () => this.workspace.openView(GRAPH_VIEW_TYPE));
     this.workspace.addRibbonIcon("settings", "Einstellungen", () => this.setting.open(), true);
     this.registerCoreCommands();
     this.workspace.on("file-open", (file) => file && this.trackRecentFile(file.path));
@@ -98,7 +102,7 @@ export class App {
     return file;
   }
 
-  private addIndexView(sidebar: Sidebar, view: SearchView | BacklinksView | OutgoingLinksView | OutlineView) {
+  private addIndexView(sidebar: Sidebar, view: SearchView | BacklinksView | OutgoingLinksView | OutlineView | LocalGraphView) {
     view.isVisible = () => sidebar.isActive(view.id);
     sidebar.addView(view);
   }
@@ -149,6 +153,8 @@ export class App {
     this.commands.addCommand({ id: "backlink:open", name: "Backlinks anzeigen", callback: () => this.rightSidebar.activate("backlink") });
     this.commands.addCommand({ id: "outgoing-links:open", name: "Ausgehende Links anzeigen", callback: () => this.rightSidebar.activate("outgoing-link") });
     this.commands.addCommand({ id: "outline:open", name: "Gliederung anzeigen", callback: () => this.rightSidebar.activate("outline") });
+    this.commands.addCommand({ id: "graph:open", name: "Graph-Ansicht öffnen", callback: () => this.workspace.openView(GRAPH_VIEW_TYPE) });
+    this.commands.addCommand({ id: "graph:open-local", name: "Lokalen Graphen öffnen", callback: () => this.rightSidebar.activate("localgraph") });
     this.commands.addCommand({
       id: "command-palette:open",
       name: "Befehlspalette: Öffnen",

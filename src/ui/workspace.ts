@@ -5,10 +5,10 @@ import type { MarkdownEditor } from "../editor/markdown-editor";
 import { Events } from "../shared/events";
 import { setIcon } from "./icons";
 import { Notice } from "./notice";
-import { WorkspaceLeaf } from "./workspace-leaf";
+import { type LeafView, WorkspaceLeaf } from "./workspace-leaf";
 
 interface SavedLayout {
-  tabs: { path: string | null; reading?: boolean }[];
+  tabs: { path: string | null; reading?: boolean; type?: string }[];
   active: number;
 }
 
@@ -40,6 +40,8 @@ export class Workspace extends Events {
   private activeFile: TFile | null = null;
   private restoring = false;
   private readyCallbacks: (() => unknown)[] = [];
+  /** Ansichtstyp → Erzeuger (wie Obsidians `viewRegistry`), z. B. „graph“. */
+  private viewCreators = new Map<string, (leaf: WorkspaceLeaf) => LeafView>();
 
   constructor(
     private app: App,
@@ -89,6 +91,31 @@ export class Workspace extends Events {
       }
     }
     this.trigger("layout-ready");
+  }
+
+  registerView(type: string, creator: (leaf: WorkspaceLeaf) => LeafView): void {
+    this.viewCreators.set(type, creator);
+  }
+
+  getLeavesOfType(type: string): WorkspaceLeaf[] {
+    return this.leaves.filter((l) => l.view?.getViewType() === type);
+  }
+
+  /**
+   * Öffnet eine Ansicht als Tab: einen vorhandenen Tab dieses Typs, sonst den aktiven, wenn er leer
+   * ist, sonst einen neuen. Eine geöffnete Datei wird dabei nie verdrängt.
+   */
+  openView(type: string): WorkspaceLeaf | null {
+    const creator = this.viewCreators.get(type);
+    if (!creator) return null;
+    let leaf = this.getLeavesOfType(type)[0];
+    if (!leaf) {
+      const active = this.activeLeaf;
+      leaf = active && !active.view && !active.editor.getFile() ? active : this.getLeaf("tab");
+      leaf.setView(creator(leaf));
+    }
+    this.setActiveLeaf(leaf);
+    return leaf;
   }
 
   getActiveFile(): TFile | null {
@@ -201,7 +228,11 @@ export class Workspace extends Events {
   private saveLayout() {
     if (this.restoring) return;
     const layout: SavedLayout = {
-      tabs: this.leaves.map((l) => ({ path: l.getFile()?.path ?? null, reading: l.editor.isReading() || undefined })),
+      tabs: this.leaves.map((l) =>
+        l.view
+          ? { path: null, type: l.view.getViewType() }
+          : { path: l.getFile()?.path ?? null, reading: l.editor.isReading() || undefined },
+      ),
       active: this.activeLeaf ? this.leaves.indexOf(this.activeLeaf) : 0,
     };
     this.app.saveLocalStorage(LAYOUT_KEY, layout);
@@ -213,6 +244,12 @@ export class Workspace extends Events {
     this.restoring = true;
     try {
       for (const tab of layout?.tabs ?? []) {
+        const creator = tab.type ? this.viewCreators.get(tab.type) : undefined;
+        if (creator) {
+          const leaf = this.createLeaf();
+          leaf.setView(creator(leaf));
+          continue;
+        }
         const file = tab.path ? this.app.vault.getFileByPath(tab.path) : null;
         if (tab.path && !file) continue;
         const leaf = this.createLeaf();

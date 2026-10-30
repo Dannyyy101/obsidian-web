@@ -1874,3 +1874,191 @@ button:disabled {
     align-items: stretch;
   }
 }
+
+/* --- Graph (global als Tab, lokal in der Seitenleiste) --------------------------------------- */
+
+body {
+  --graph-line: var(--background-modifier-border);
+  --graph-node: var(--text-muted);
+  --graph-node-unresolved: var(--text-faint);
+  --graph-node-focused: var(--text-accent);
+  --graph-node-tag: hsl(150, 45%, 50%);
+  --graph-node-attachment: hsl(45, 75%, 55%);
+  --graph-text: var(--text-normal);
+  --graph-controls-width: 240px;
+}
+
+/* Farben liest der Renderer aus diesen Elementen, damit Themes sie per Klasse überschreiben können. */
+.graph-color-probes {
+  display: none;
+}
+
+.graph-view.color-fill {
+  color: var(--graph-node);
+}
+
+.graph-view.color-fill-focused,
+.graph-view.color-fill-highlight {
+  color: var(--graph-node-focused);
+}
+
+.graph-view.color-fill-tag {
+  color: var(--graph-node-tag);
+}
+
+.graph-view.color-fill-attachment {
+  color: var(--graph-node-attachment);
+}
+
+.graph-view.color-fill-unresolved {
+  color: var(--graph-node-unresolved);
+}
+
+.graph-view.color-line {
+  color: var(--graph-line);
+}
+
+.graph-view.color-line-highlight {
+  color: var(--interactive-accent);
+}
+
+.graph-view.color-text {
+  color: var(--graph-text);
+}
+
+.graph-view.color-arrow {
+  color: var(--text-muted);
+}
+
+.workspace-leaf-content[data-type="graph"] {
+  display: flex;
+  flex-direction: column;
+  background: var(--background-primary);
+}
+
+.workspace-leaf-content[data-type="graph"] > .view-content {
+  flex: 1;
+}
+
+.graph-view-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.graph-canvas {
+  display: block;
+  cursor: grab;
+  touch-action: none;
+}
+
+.graph-canvas:active {
+  cursor: grabbing;
+}
+
+.graph-canvas.is-hovering {
+  cursor: pointer;
+}
+
+.graph-controls {
+  position: absolute;
+  top: var(--size-4-2);
+  right: var(--size-4-2);
+  width: var(--graph-controls-width);
+  max-height: calc(100% - 16px);
+  overflow-y: auto;
+  padding: var(--size-4-1) var(--size-4-2) var(--size-4-2);
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  font-size: var(--font-ui-small);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.graph-controls.is-close {
+  width: auto;
+  padding: var(--size-4-1);
+}
+
+.graph-controls.is-close > :not(.graph-control-buttons):not(.mod-close) {
+  display: none;
+}
+
+.graph-control-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--size-4-1);
+}
+
+.graph-controls-button {
+  margin-left: auto;
+}
+
+.graph-control-buttons .graph-controls-button {
+  margin-left: 0;
+}
+
+.graph-control-section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-1);
+  padding: var(--size-4-1) 0;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.graph-control-section.is-collapsed > .tree-item-children {
+  display: none;
+}
+
+.graph-control-section.is-collapsed .collapse-icon {
+  transform: rotate(-90deg);
+}
+
+.graph-controls .setting-item {
+  padding: 6px 0;
+  border: none;
+  gap: var(--size-4-2);
+}
+
+.graph-controls .setting-item-info:empty,
+.graph-controls .setting-item-description:empty {
+  display: none;
+}
+
+.graph-controls .setting-item-name {
+  font-size: var(--font-ui-small);
+}
+
+.graph-controls .slider {
+  width: 100px;
+}
+
+.graph-controls .mod-search-setting .setting-item-control,
+.graph-controls .mod-search-setting input,
+.graph-color-group .setting-item-control input[type="text"] {
+  width: 100%;
+}
+
+.graph-color-group .setting-item-control {
+  flex: 1;
+}
+
+.graph-color-group input[type="color"] {
+  width: 28px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: none;
+  flex-shrink: 0;
+}
+
+/* Lokaler Graph in der Seitenleiste */
+.workspace-tab-container > .local-graph-pane {
+  position: relative;
+  overflow: hidden;
+}
+
+.local-graph-pane .graph-controls {
+  --graph-controls-width: 220px;
+}

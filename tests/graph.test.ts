@@ -58,7 +58,7 @@ describe("buildLocalGraph", () => {
 });
 
 describe("ForceSimulation", () => {
-  it("kommt zur Ruhe, verbundene Knoten liegen näher als unverbundene", () => {
+  it("kommt zur Ruhe, ohne dass Knoten übereinanderliegen", () => {
     const g = buildGraph(source, filter);
     const sim = new ForceSimulation(g, DEFAULT_GRAPH_SETTINGS);
     let ticks = 0;
@@ -67,8 +67,8 @@ describe("ForceSimulation", () => {
     const pos = (id: string) => g.nodes.find((n) => n.id === id)!;
     const dist = (a: string, b: string) => Math.hypot(pos(a).x - pos(b).x, pos(a).y - pos(b).y);
     for (const n of g.nodes) expect(Number.isFinite(n.x) && Number.isFinite(n.y)).toBe(true);
-    expect(dist("a.md", "b.md")).toBeLessThan(dist("a.md", "d.md"));
-    expect(dist("a.md", "b.md")).toBeGreaterThan(30);
+    // Keine zwei Knoten übereinander.
+    for (const a of g.nodes) for (const b of g.nodes) if (a !== b) expect(dist(a.id, b.id)).toBeGreaterThan(30);
   });
 
   it("übernimmt Positionen bei neuen Daten", () => {

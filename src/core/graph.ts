@@ -141,7 +141,7 @@ function allEdges(source: GraphSource, filter: Omit<GraphFilter, "include" | "sh
   return edges;
 }
 
-function describe(id: string, source: GraphSource, fileByPath: Map<string, { basename: string; extension: string }>) {
+function describe(id: string, fileByPath: Map<string, { basename: string; extension: string }>) {
   if (id.startsWith("unresolved:")) return { label: id.slice("unresolved:".length), type: "unresolved" as const };
   if (id.startsWith("#")) return { label: id, type: "tag" as const };
   const file = fileByPath.get(id);
@@ -164,7 +164,7 @@ export function buildGraph(source: GraphSource, filter: GraphFilter): GraphData 
   };
   const b = new Builder();
   const add = (id: string) => {
-    const { label, type } = describe(id, source, fileByPath);
+    const { label, type } = describe(id, fileByPath);
     return b.node(id, label, type);
   };
   for (const file of source.files) {
@@ -218,7 +218,7 @@ export function buildLocalGraph(source: GraphSource, center: string, options: Lo
 
   const b = new Builder();
   const add = (id: string) => {
-    const { label, type } = describe(id, source, fileByPath);
+    const { label, type } = describe(id, fileByPath);
     return b.node(id, label, type);
   };
   add(center);
@@ -379,11 +379,11 @@ export class ForceSimulation {
     }
     const root = newQuad(minX, minY, Math.max(maxX - minX, maxY - minY, 1) + 1);
     for (const n of nodes) insert(root, n);
-    const charge = repelStrength * 100 * alpha;
+    const charge = repelStrength * 20 * alpha;
     for (const n of nodes) this.repel(root, n, charge);
 
     // Zug zur Mitte, damit unverbundene Teile nicht davontreiben.
-    const center = centerStrength * 0.05 * alpha;
+    const center = centerStrength * 0.2 * alpha;
     for (const n of nodes) {
       n.vx -= n.x * center;
       n.vy -= n.y * center;
