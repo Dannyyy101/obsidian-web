@@ -1,0 +1,8 @@
+node_modules
+dist
+public/bundled-plugins
+.git
+.claude
+deploy
+*.log
+.DS_Store

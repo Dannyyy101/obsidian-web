@@ -1,0 +1,42 @@
+{
+  "name": "obsidian-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "start": "node server/prod.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "fetch-plugins": "node scripts/fetch-plugins.mjs",
+    "postinstall": "node scripts/fetch-plugins.mjs"
+  },
+  "dependencies": {
+    "@codemirror/commands": "^6.11.1",
+    "@codemirror/lang-markdown": "^6.5.2",
+    "@codemirror/language": "^6.13.1",
+    "@codemirror/search": "^6.7.2",
+    "@codemirror/state": "^6.7.6",
+    "@codemirror/view": "^6.43.15",
+    "@lezer/common": "^1.5.5",
+    "@lezer/highlight": "^1.2.5",
+    "@lezer/markdown": "^1.8.1",
+    "codemirror": "^6.0.2",
+    "katex": "^0.19.1",
+    "lucide": "^1.65.0",
+    "mermaid": "^12.2.0",
+    "moment": "^2.31.0",
+    "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "fake-indexeddb": "^6.2.7",
+    "happy-dom": "^21.0.4",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5",
+    "webdav-server": "^2.6.3"
+  }
+}

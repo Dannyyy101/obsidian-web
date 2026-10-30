@@ -1,0 +1,42 @@
+# obsidian-web hinter oauth2-proxy, Anmeldung über Zitadel (OIDC).
+# Der obsidian-web-Container veröffentlicht keinen Port – sein /__proxy ist ein offener Proxy und
+# darf nie ohne Anmeldung davor erreichbar sein. Wer rein darf, regelst du in Zitadel
+# (Projekt → "Check authorization on authentication" + Rollen-Zuweisung).
+#
+# Start:  cp .env.example .env  # Werte eintragen
+#         docker compose up -d --build
+#
+# Dein Reverse Proxy (TLS) leitet ${PUBLIC_HOST} auf oauth2-proxy:4180 weiter
+# (bzw. auf 127.0.0.1:4180, wenn er nicht im selben Docker-Netz läuft).
+services:
+  obsidian-web:
+    build: ..
+    restart: unless-stopped
+    environment:
+      PROXY_ALLOWED_HOSTS: ${PROXY_ALLOWED_HOSTS:-}
+
+  oauth2-proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.7.1
+    restart: unless-stopped
+    depends_on: [obsidian-web]
+    environment:
+      OAUTH2_PROXY_PROVIDER: oidc
+      OAUTH2_PROXY_OIDC_ISSUER_URL: ${ZITADEL_ISSUER}
+      OAUTH2_PROXY_CLIENT_ID: ${ZITADEL_CLIENT_ID}
+      OAUTH2_PROXY_CLIENT_SECRET: ${ZITADEL_CLIENT_SECRET}
+      OAUTH2_PROXY_CODE_CHALLENGE_METHOD: S256
+      OAUTH2_PROXY_SCOPE: openid email profile offline_access
+      OAUTH2_PROXY_REDIRECT_URL: https://${PUBLIC_HOST}/oauth2/callback
+      OAUTH2_PROXY_UPSTREAMS: http://obsidian-web:3000
+      OAUTH2_PROXY_HTTP_ADDRESS: 0.0.0.0:4180
+      OAUTH2_PROXY_REVERSE_PROXY: "true"
+      OAUTH2_PROXY_EMAIL_DOMAINS: "*"
+      OAUTH2_PROXY_COOKIE_SECRET: ${COOKIE_SECRET}
+      OAUTH2_PROXY_COOKIE_SECURE: "true"
+      OAUTH2_PROXY_COOKIE_DOMAINS: ${PUBLIC_HOST}
+      # Lange Session, damit der Sync im Hintergrund nicht ständig an einer abgelaufenen Anmeldung scheitert.
+      OAUTH2_PROXY_COOKIE_EXPIRE: 720h
+      OAUTH2_PROXY_COOKIE_REFRESH: 1h
+      OAUTH2_PROXY_SKIP_PROVIDER_BUTTON: "true"
+    ports:
+      - "127.0.0.1:4180:4180"

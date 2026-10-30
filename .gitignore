@@ -1,0 +1,7 @@
+node_modules/
+dist/
+# Drittanbieter-Plugins werden per `pnpm fetch-plugins` geladen und nicht eingecheckt
+public/bundled-plugins/
+.DS_Store
+# Secrets fürs Deployment
+deploy/.env
