@@ -1,5 +1,7 @@
 // Lädt die mitgelieferten Community-Plugins (in Release-Form) nach public/bundled-plugins/.
 // Die Dateien werden nicht eingecheckt: remotely-save enthält Code unter PolyForm-Strict-Lizenz.
+// Aus demselben Grund landen sie auch nicht im Docker-Image, der Container lädt sie beim Start
+// nach PLUGIN_DIR.
 import { mkdir, writeFile, access } from "node:fs/promises";
 import { join } from "node:path";
 
@@ -10,7 +12,7 @@ const FILES = ["main.js", "manifest.json", "styles.css"];
 const force = process.argv.includes("--force");
 
 for (const { id, repo, version } of PLUGINS) {
-  const dir = join("public", "bundled-plugins", id);
+  const dir = join(process.env.PLUGIN_DIR ?? join("public", "bundled-plugins"), id);
   await mkdir(dir, { recursive: true });
   for (const file of FILES) {
     const target = join(dir, file);

@@ -41,8 +41,11 @@ jobs:
       - run: pnpm test
       - run: pnpm exec vite build
 
+      # Ohne bundled-plugins: remotely-save steht teils unter PolyForm Strict und darf nicht weitergegeben werden.
       - uses: actions/upload-artifact@v4
         with:
           name: dist
-          path: dist
+          path: |
+            dist
+            !dist/bundled-plugins
           retention-days: 7
