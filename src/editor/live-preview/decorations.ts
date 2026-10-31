@@ -15,6 +15,7 @@ import {
   CheckboxWidget,
   CalloutWidget,
   EmbedWidget,
+  FootnoteRefWidget,
   followLink,
   HrWidget,
   ImageWidget,
@@ -59,6 +60,19 @@ class Builder {
       const last = state.doc.lineAt(r.to).number;
       for (let n = first; n <= last; n++) this.activeLines.add(n);
     }
+  }
+
+  private footnotes: Map<string, string> | null = null;
+
+  /** Text der Definition `[^label]: …` für den Tooltip, einmal pro Durchlauf gesucht. */
+  private footnoteDefinition(label: string): string {
+    if (!this.footnotes) {
+      this.footnotes = new Map();
+      for (const m of this.state.doc.toString().matchAll(/^[ \t>]*\[\^([^\]\s]+)\]:[ \t]?(.*)$/gm)) {
+        if (!this.footnotes.has(m[1])) this.footnotes.set(m[1], m[2]);
+      }
+    }
+    return this.footnotes.get(label) ?? "";
   }
 
   private add(from: number, to: number, deco: Decoration) {
@@ -267,6 +281,29 @@ class Builder {
       case "ObsidianComment":
         this.add(n.from, n.to, markClass("cm-comment"));
         return false;
+
+      case "FootnoteReference": {
+        const label = state.sliceDoc(n.from + 2, n.to - 1);
+        if (this.revealed(n.from, n.to)) this.add(n.from, n.to, markClass("cm-footref"));
+        else this.add(n.from, n.to, Decoration.replace({ widget: new FootnoteRefWidget(label, this.footnoteDefinition(label)) }));
+        return false;
+      }
+
+      case "InlineFootnote":
+        // Inhalt bleibt sichtbar (klein, hochgestellt), nur `^[` und `]` verschwinden.
+        this.add(n.from, n.to, markClass("cm-inline-footnote"));
+        if (!this.revealed(n.from, n.to)) {
+          this.hide(n.from, n.from + 2);
+          this.hide(n.to - 1, n.to);
+        }
+        return;
+
+      case "FootnoteDefinition": {
+        this.eachLine(n.from, n.to, (from) => this.add(from, from, lineClass("HyperMD-footnote")));
+        const marks = n.node.getChildren("FootnoteMark");
+        if (marks.length >= 2) this.add(n.from, marks[1].to, markClass("cm-footref"));
+        return;
+      }
 
       case "Table":
         // Gerendert vom blockWidgetField; hier nur die Quelle als Tabelle kennzeichnen.

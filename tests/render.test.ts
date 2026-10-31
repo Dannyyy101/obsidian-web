@@ -95,4 +95,17 @@ describe("Markdown-Renderer", () => {
     const el = render("---\ntags: [a]\n---\nText ^abc");
     expect(el.textContent).toBe("Text");
   });
+
+  it("Fußnoten: Verweise nummeriert, Liste am Ende, Inline-Fußnoten, fehlende Definition bleibt Text", () => {
+    const el = render("Erst[^b] dann[^a] und ^[inline **x**] und [^b] und [^fehlt].\n\n[^a]: Def A\n[^b]: Def B mit [[Andere]]\n    weiter");
+    const refs = [...el.querySelectorAll("p > sup.footnote-ref")].map((s) => s.textContent);
+    expect(refs).toEqual(["1", "2", "3", "1"]);
+    expect(el.querySelector("p")!.textContent).toContain("[^fehlt]");
+    const items = [...el.querySelectorAll("section.footnotes li")];
+    expect(items.map((li) => li.textContent)).toEqual(["Def B mit Andereweiter ↩︎", "Def A ↩︎", "inline x ↩︎"]);
+    expect(items[2].querySelector("strong")?.textContent).toBe("x");
+    const first = el.querySelector<HTMLElement>("p > sup.footnote-ref")!;
+    expect(first.querySelector("a")!.getAttribute("href")).toBe(`#${items[0].id}`);
+    expect(items[0].querySelector("a.footnote-backref")!.getAttribute("href")).toBe(`#${first.id}`);
+  });
 });

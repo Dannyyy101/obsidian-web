@@ -1,4 +1,5 @@
 import type { LivePreviewHost } from "../live-preview/host";
+import type { FootnoteState } from "./footnotes";
 
 export interface RenderContext {
   host: LivePreviewHost;
@@ -10,6 +11,8 @@ export interface RenderContext {
   embedded: ReadonlySet<string>;
   /** Aufgabe in der Quelldatei umschalten (`offset` = Position von `[ ]`). Nur in der Hauptansicht. */
   toggleTask?: (offset: number, checked: boolean) => void;
+  /** Fußnoten des Dokuments; Callouts teilen sie, Embeds haben eigene. */
+  footnotes?: FootnoteState;
 }
 
 export const MAX_EMBED_DEPTH = 4;

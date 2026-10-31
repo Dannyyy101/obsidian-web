@@ -124,7 +124,7 @@ für den Rest vor.
 | Kontextmenü im Editor, Formatierungsbefehle (fett, Link …) | ⬜ |
 | Vim-Modus | ⬜ |
 | Tabellen-Editor in der Live Preview | ⬜ |
-| Fußnoten rendern | ⬜ |
+| Fußnoten rendern | ✅ `[^1]`, `[^1]: …` (mit eingerückten Folgezeilen), `^[inline]`; Lesemodus mit nummerierter Liste, Live Preview mit Tooltip; `CachedMetadata.footnotes` |
 
 ### Organisieren
 
