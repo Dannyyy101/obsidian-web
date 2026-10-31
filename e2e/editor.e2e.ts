@@ -46,3 +46,16 @@ test("Enter setzt Listen fort, Tab rückt ein, Enter auf leerem Punkt beendet di
     .poll(() => readVaultFile(page, vaultName, "Projekte/Plan.md"), { timeout: 10_000 })
     .toContain("\n- [ ] eins\n\t- [ ] zwei\nEnde");
 });
+
+test("Klammern schließen sich selbst, Formatierungszeichen umschließen die Auswahl", async ({ vault: page, vaultName }) => {
+  await openFromExplorer(page, "Projekte/Plan.md");
+  await activeEditor(page).click();
+  await page.keyboard.press("ControlOrMeta+End");
+  await page.keyboard.type("(siehe [[Plan");
+  await page.keyboard.press("End");
+  await page.keyboard.type(" Wort");
+  for (let i = 0; i < 4; i++) await page.keyboard.press("Shift+ArrowLeft");
+  await page.keyboard.type("**");
+
+  await expect.poll(() => readVaultFile(page, vaultName, "Projekte/Plan.md"), { timeout: 10_000 }).toContain("(siehe [[Plan]]) **Wort**");
+});
