@@ -5,6 +5,7 @@ import { FileManager } from "../core/file-manager";
 import { MetadataCache, type MetadataParser, type MetadataStore } from "../core/metadata-cache";
 import type { TFile, Vault } from "../core/vault";
 import { join } from "../shared/path";
+import { FORMATTING_COMMANDS } from "../editor/formatting";
 import { MarkdownEditor } from "../editor/markdown-editor";
 import { CommandPalette } from "../ui/command-palette";
 import { promptText } from "../ui/dialogs";
@@ -183,6 +184,18 @@ export class App {
         return true;
       },
     });
+    for (const command of FORMATTING_COMMANDS) {
+      this.commands.addCommand({
+        id: command.id,
+        name: command.name,
+        icon: command.icon,
+        checkCallback: (checking) => {
+          if (!this.editor.getFile() || this.editor.isReading()) return false;
+          if (!checking) command.run(this.editor.editor.cm);
+          return true;
+        },
+      });
+    }
     this.commands.addCommand({
       id: "switcher:open",
       name: "Schnellwechsler: Öffnen",

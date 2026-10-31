@@ -121,7 +121,7 @@ für den Rest vor.
 | Syntax-Highlighting in Codeblöcken, Kopieren-Knopf | ⬜ |
 | Überschriften und Listen einklappen | ⬜ |
 | Suchen & Ersetzen in der Notiz (eigene Oberfläche) | ⬜ |
-| Kontextmenü im Editor, Formatierungsbefehle (fett, Link …) | ⬜ |
+| Kontextmenü im Editor, Formatierungsbefehle (fett, Link …) | ✅ Befehls-IDs wie Obsidian (`editor:toggle-bold` …), Kürzel Cmd/Strg+B, I, K, /, Enter; Untermenüs (`MenuItem.setSubmenu`), Event `editor-menu` |
 | Vim-Modus | ⬜ |
 | Tabellen-Editor in der Live Preview | ⬜ |
 | Fußnoten rendern | ⬜ |

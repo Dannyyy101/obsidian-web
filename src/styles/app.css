@@ -1815,6 +1815,15 @@ button:disabled {
   height: 16px;
 }
 
+.menu-item-title {
+  flex: 1;
+}
+
+.menu-item-icon.mod-submenu {
+  margin-left: auto;
+  color: var(--text-faint);
+}
+
 .menu-separator {
   height: 1px;
   margin: 4px 0;
