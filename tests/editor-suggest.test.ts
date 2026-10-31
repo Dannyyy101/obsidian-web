@@ -6,6 +6,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import type { App } from "../src/app/app";
 import { MetadataCache } from "../src/core/metadata-cache";
 import { Vault } from "../src/core/vault";
+import { listEditing } from "../src/editor/lists";
 import { editorSuggest, type EditorSuggest } from "../src/editor/suggest/editor-suggest";
 import { LinkSuggest } from "../src/editor/suggest/link-suggest";
 import { TagSuggest } from "../src/editor/suggest/tag-suggest";
@@ -39,7 +40,11 @@ function editor(app: App, doc: string, file = "Notiz.md") {
     state: EditorState.create({
       doc: doc.replace("|", ""),
       selection: { anchor: doc.indexOf("|") },
-      extensions: [markdown({ base: markdownLanguage, extensions: obsidianLezerExtensions }), editorSuggest(suggests, () => app.vault.getFileByPath(file))],
+      extensions: [
+        markdown({ base: markdownLanguage, extensions: obsidianLezerExtensions }),
+        editorSuggest(suggests, () => app.vault.getFileByPath(file)),
+        listEditing({ useTab: true, tabSize: 4, smartIndentList: true }),
+      ],
     }),
   });
   /** Tippt `text` wie der Nutzer (löst die Vorschläge aus). */
@@ -145,6 +150,19 @@ describe("Vorschläge im Editor", () => {
     expect(await titles()).toEqual([]);
     type(" #");
     expect((await titles()).length).toBeGreaterThan(0);
+    view.destroy();
+  });
+
+  it("Enter und Tab übernehmen in Listen den Vorschlag statt die Liste fortzusetzen", async () => {
+    const { type, key, text, view } = editor(app, "- |", "Ordner/Plan.md");
+    type("[[pla");
+    expect(await titles()).toEqual(["Plan"]);
+    key("Enter");
+    expect(text()).toBe("- [[Plan]]|");
+    type(" #ide");
+    expect(await titles()).toEqual(["idee"]);
+    key("Tab");
+    expect(text()).toBe("- [[Plan]] #idee |");
     view.destroy();
   });
 

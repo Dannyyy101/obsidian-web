@@ -1,4 +1,4 @@
-import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
+import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
@@ -12,6 +12,7 @@ import { setIcon } from "../ui/icons";
 import { Notice } from "../ui/notice";
 import { join } from "../shared/path";
 import { inlineTitle } from "./inline-title";
+import { listEditing } from "./lists";
 import { editorSuggest } from "./suggest/editor-suggest";
 import { LinkSuggest } from "./suggest/link-suggest";
 import { TagSuggest } from "./suggest/tag-suggest";
@@ -196,7 +197,12 @@ export class MarkdownEditor {
         drawSelection(),
         dropCursor(),
         highlightSelectionMatches(),
-        keymap.of([...defaultKeymap, ...historyKeymap, ...searchKeymap, indentWithTab]),
+        listEditing({
+          useTab: this.vault.getConfig("useTab") !== false,
+          tabSize: Number(this.vault.getConfig("tabSize")) || 4,
+          smartIndentList: this.vault.getConfig("smartIndentList") !== false,
+        }),
+        keymap.of([...defaultKeymap, ...historyKeymap, ...searchKeymap]),
         markdown({ base: markdownLanguage, extensions: obsidianLezerExtensions }),
         syntaxHighlighting(obsidianHighlight),
         this.mode.of(this.modeExtension()),

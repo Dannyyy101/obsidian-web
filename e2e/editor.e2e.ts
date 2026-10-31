@@ -28,6 +28,25 @@ test("Lesemodus rendert die Notiz und schaltet zurück", async ({ vault: page })
   await expect(activeEditor(page)).toBeVisible();
 });
 
+test("Enter setzt Listen fort, Tab rückt ein, Enter auf leerem Punkt beendet die Liste", async ({ vault: page, vaultName }) => {
+  await openFromExplorer(page, "Projekte/Plan.md");
+  await activeEditor(page).click();
+  await page.keyboard.press("ControlOrMeta+End");
+  await page.keyboard.press("Enter");
+  await page.keyboard.type("- [ ] eins");
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Tab");
+  await page.keyboard.type("zwei");
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Enter");
+  await page.keyboard.type("Ende");
+
+  await expect
+    .poll(() => readVaultFile(page, vaultName, "Projekte/Plan.md"), { timeout: 10_000 })
+    .toContain("\n- [ ] eins\n\t- [ ] zwei\nEnde");
+});
+
 test("[[ und # schlagen Notizen und Tags vor und fügen die Auswahl ein", async ({ vault: page, vaultName }) => {
   await openFromExplorer(page, "Projekte/Plan.md");
   await activeEditor(page).click();
