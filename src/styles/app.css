@@ -1590,7 +1590,9 @@ button:disabled {
   background: var(--background-modifier-cover);
 }
 
-.modal {
+/* Prompts (Befehlspalette, Schnellwechsler, Plugin-Suchdialoge) tragen wie in Obsidian nicht immer `.modal`. */
+.modal,
+.prompt {
   position: relative;
   background: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
@@ -1698,9 +1700,10 @@ button:disabled {
   font-size: var(--font-ui-medium) !important;
 }
 
-.modal.prompt {
+.prompt {
   align-self: flex-start;
   margin-top: 12vh;
+  width: min(700px, calc(100vw - 32px));
 }
 
 .prompt-results {

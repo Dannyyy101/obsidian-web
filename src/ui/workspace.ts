@@ -15,6 +15,9 @@ interface SavedLayout {
 
 const LAYOUT_KEY = "tabs";
 
+/** Wie Obsidians `PaneType`. */
+export type PaneType = "tab" | "split" | "window";
+
 /**
  * Entspricht Obsidians `Workspace`: Ribbon, Seitenleisten, Tabs im Hauptbereich, Statusleiste.
  * Das Tab-Layout wird pro Vault im Browser gespeichert – nicht in `workspace.json`, damit das
@@ -130,6 +133,21 @@ export class Workspace extends Events {
     return this.getLeaf(false).editor;
   }
 
+  /** Ansicht des aktiven Tabs, wenn sie vom Typ `type` ist (z. B. `MarkdownView`). */
+  getActiveViewOfType<T>(type: abstract new (...args: any[]) => T): T | null {
+    const view = this.activeLeaf?.view;
+    return view instanceof type ? view : null;
+  }
+
+  /** Alle Tabs (Seitenleisten sind in obsidian-web noch keine Leaves). */
+  iterateAllLeaves(callback: (leaf: WorkspaceLeaf) => unknown): void {
+    for (const leaf of [...this.leaves]) callback(leaf);
+  }
+
+  iterateRootLeaves(callback: (leaf: WorkspaceLeaf) => unknown): void {
+    this.iterateAllLeaves(callback);
+  }
+
   iterateEditors(fn: (editor: MarkdownEditor) => void): void {
     for (const leaf of this.leaves) fn(leaf.editor);
   }
@@ -174,9 +192,9 @@ export class Workspace extends Events {
 
   /**
    * Wie Obsidians `getLeaf`: `false` = aktiver Tab (ggf. neu), `true`/`"tab"` = neuer Tab rechts
-   * neben dem aktiven.
+   * neben dem aktiven. Splits und Fenster gibt es noch nicht, `"split"`/`"window"` öffnen einen Tab.
    */
-  getLeaf(newLeaf: boolean | "tab" = false): WorkspaceLeaf {
+  getLeaf(newLeaf: PaneType | boolean = false): WorkspaceLeaf {
     if (!newLeaf && this.activeLeaf) return this.activeLeaf;
     const index = this.activeLeaf ? this.leaves.indexOf(this.activeLeaf) + 1 : this.leaves.length;
     const leaf = this.createLeaf(index);
@@ -184,7 +202,8 @@ export class Workspace extends Events {
     return leaf;
   }
 
-  setActiveLeaf(leaf: WorkspaceLeaf, focus = true): void {
+  setActiveLeaf(leaf: WorkspaceLeaf, params: boolean | { focus?: boolean } = true): void {
+    const focus = typeof params === "boolean" ? params : params.focus !== false;
     const changed = this.activeLeaf !== leaf;
     this.activeLeaf = leaf;
     for (const l of this.leaves) l.setActive(l === leaf);
@@ -253,8 +272,8 @@ export class Workspace extends Events {
     if (this.restoring) return;
     const layout: SavedLayout = {
       tabs: this.leaves.map((l) =>
-        l.view
-          ? { path: null, type: l.view.getViewType() }
+        l.customView
+          ? { path: null, type: l.customView.getViewType() }
           : { path: l.getFile()?.path ?? null, reading: l.editor.isReading() || undefined },
       ),
       active: this.activeLeaf ? this.leaves.indexOf(this.activeLeaf) : 0,
@@ -293,7 +312,7 @@ export class Workspace extends Events {
    * Vault-Stamm angelegt (Obsidians Standard für „Neue Notizen ablegen“). `newLeaf` öffnet in
    * einem neuen Tab (Cmd/Strg+Klick).
    */
-  async openLinkText(linktext: string, sourcePath: string, newLeaf: boolean | "tab" = false): Promise<void> {
+  async openLinkText(linktext: string, sourcePath: string, newLeaf: PaneType | boolean = false): Promise<void> {
     const { path, subpath } = parseLinktext(linktext);
     const { vault, metadataCache } = this.app;
     let file = metadataCache.getFirstLinkpathDest(path, sourcePath);

@@ -100,6 +100,34 @@ export function frontmatterTags(frontmatter: Record<string, unknown> | undefined
     .map((t) => `#${t}`);
 }
 
+/** Obsidians `parseFrontMatterEntry`: Wert zum ersten passenden Schlüssel (Text oder RegExp). */
+export function parseFrontMatterEntry(frontmatter: Record<string, unknown> | null | undefined, key: string | RegExp): unknown {
+  if (!frontmatter) return null;
+  if (typeof key === "string") return key in frontmatter ? frontmatter[key] : null;
+  for (const k of Object.keys(frontmatter)) if (key.test(k)) return frontmatter[k];
+  return null;
+}
+
+/** Obsidians `parseFrontMatterStringArray`: Liste oder komma-getrennter Text als Strings. */
+export function parseFrontMatterStringArray(
+  frontmatter: Record<string, unknown> | null | undefined,
+  key: string | RegExp,
+  nospaces = false,
+): string[] | null {
+  const raw = parseFrontMatterEntry(frontmatter, key);
+  const list = Array.isArray(raw) ? raw : typeof raw === "string" ? raw.split(nospaces ? /[,\s]+/ : /,/) : raw == null ? [] : [raw];
+  const result = list
+    .filter((v): v is string | number => typeof v === "string" || typeof v === "number")
+    .map((v) => String(v).trim())
+    .filter(Boolean);
+  return result.length ? result : null;
+}
+
+/** Obsidians `parseFrontMatterAliases` (`aliases` oder `alias`). */
+export function parseFrontMatterAliases(frontmatter: Record<string, unknown> | null | undefined): string[] | null {
+  return parseFrontMatterStringArray(frontmatter, /^alias(es)?$/i);
+}
+
 function collectFrontmatterLinks(value: unknown, key: string, out: FrontmatterLinkCache[]) {
   if (typeof value === "string") {
     for (const m of value.matchAll(WIKILINK_IN_TEXT)) out.push({ key, original: m[0], ...splitAlias(m[1]) });

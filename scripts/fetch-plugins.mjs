@@ -10,6 +10,7 @@ import { join } from "node:path";
 const PLUGINS = [
   { id: "remotely-save", repo: "remotely-save/remotely-save", version: "0.5.25" },
   { id: "obsidian-latex-suite", repo: "artisticat1/obsidian-latex-suite", version: "1.14.1" },
+  { id: "omnisearch", repo: "scambier/obsidian-omnisearch", version: "1.32.0" },
 ];
 const FILES = ["main.js", "manifest.json", "styles.css"];
 const force = process.argv.includes("--force");

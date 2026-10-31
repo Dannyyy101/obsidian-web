@@ -4,11 +4,14 @@ import { StateEffect, StateField } from "@codemirror/state";
 import { ViewPlugin } from "@codemirror/view";
 import type { App } from "../app/app";
 import type { TFile } from "../core/vault";
+import type { Editor } from "./editor";
 
 /** Entspricht Obsidians `MarkdownFileInfo`, soweit obsidian-web es schon abbildet. */
 export interface MarkdownFileInfo {
   app: App;
   file: TFile | null;
+  /** Fehlt nur im allerersten, leeren Zustand vor dem Anlegen der Ansicht. */
+  editor?: Editor;
 }
 
 /** Datei und App des Editors; wird beim Öffnen einer Datei mit dem neuen Zustand gesetzt. */

@@ -3,6 +3,7 @@ import type { TFile } from "../core/vault";
 import { MarkdownEditor } from "../editor/markdown-editor";
 import { Events } from "../shared/events";
 import { setIcon } from "./icons";
+import { MarkdownView } from "./markdown-view";
 
 let nextId = 0;
 
@@ -27,7 +28,9 @@ export interface LeafView {
 export class WorkspaceLeaf extends Events {
   readonly id = `leaf-${nextId++}`;
   editor: MarkdownEditor;
-  view: LeafView | null = null;
+  /** @internal Sonderansicht statt des Editors (z. B. Graph). */
+  customView: LeafView | null = null;
+  private markdownView: MarkdownView;
   tabHeaderEl: HTMLElement;
   private titleEl: HTMLElement;
   private iconEl: HTMLElement;
@@ -63,27 +66,41 @@ export class WorkspaceLeaf extends Events {
     });
 
     this.editor = new MarkdownEditor(containerEl, app, (file) => {
-      if (file && this.view) this.setView(null);
+      if (file && this.customView) this.setView(null);
       this.updateHeader();
       this.onFile(this, file);
     });
+    this.markdownView = new MarkdownView(this, app, this.editor);
     this.updateHeader();
   }
 
+  /** Wie in Obsidian: die Sonderansicht, sonst die `MarkdownView`, solange eine Datei offen ist. */
+  get view(): LeafView | MarkdownView | null {
+    return this.customView ?? (this.editor.getFile() ? this.markdownView : null);
+  }
+
+  /** Entspricht Obsidians `getViewState` (ohne Anheften: `pinned` gibt es noch nicht). */
+  getViewState(): { type: string; state: Record<string, unknown>; active?: boolean; pinned?: boolean } {
+    if (this.customView) return { type: this.customView.getViewType(), state: {}, active: this.active };
+    const file = this.editor.getFile();
+    if (!file) return { type: "empty", state: {}, active: this.active };
+    return { type: "markdown", state: { file: file.path, mode: this.markdownView.getMode() }, active: this.active, pinned: false };
+  }
+
   getFile(): TFile | null {
-    return this.view ? null : this.editor.getFile();
+    return this.customView ? null : this.editor.getFile();
   }
 
   getDisplayText(): string {
-    return this.view?.getDisplayText() ?? this.getFile()?.basename ?? "Neuer Tab";
+    return this.customView?.getDisplayText() ?? this.getFile()?.basename ?? "Neuer Tab";
   }
 
   /** Zeigt `view` statt des Editors; `null` kehrt zum Editor zurück. */
   setView(view: LeafView | null): void {
-    if (this.view === view) return;
-    this.view?.onClose();
-    this.view?.containerEl.detach();
-    this.view = view;
+    if (this.customView === view) return;
+    this.customView?.onClose();
+    this.customView?.containerEl.detach();
+    this.customView = view;
     if (view) this.editor.containerEl.parentElement?.appendChild(view.containerEl);
     this.setActive(this.active);
     this.updateHeader();
@@ -93,27 +110,29 @@ export class WorkspaceLeaf extends Events {
   private updateHeader() {
     const text = this.getDisplayText();
     this.titleEl.setText(text);
-    setIcon(this.iconEl, this.view?.getIcon() ?? "file-text");
+    setIcon(this.iconEl, this.customView?.getIcon() ?? "file-text");
     this.tabHeaderEl.setAttr("aria-label", this.getFile()?.path ?? text);
   }
 
   setActive(active: boolean) {
     this.active = active;
     this.tabHeaderEl.toggleClass("is-active", active);
-    this.editor.containerEl.toggle(active && !this.view);
-    if (this.view) {
-      this.view.containerEl.toggle(active);
-      if (active) this.view.onShow?.();
+    this.editor.containerEl.toggle(active && !this.customView);
+    if (this.customView) {
+      this.customView.containerEl.toggle(active);
+      if (active) this.customView.onShow?.();
     }
   }
 
-  async openFile(file: TFile): Promise<void> {
+  /** `active: true` macht den Tab zusätzlich zum aktiven (wie Obsidians `OpenViewState.active`). */
+  async openFile(file: TFile, openState?: { active?: boolean }): Promise<void> {
     await this.editor.openFile(file);
+    if (openState?.active) this.onActivate(this);
   }
 
   async detach(): Promise<void> {
-    this.view?.onClose();
-    this.view?.containerEl.detach();
+    this.customView?.onClose();
+    this.customView?.containerEl.detach();
     await this.editor.destroy();
     this.tabHeaderEl.detach();
   }

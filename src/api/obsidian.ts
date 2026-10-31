@@ -7,7 +7,12 @@ export { App } from "../app/app";
 export { Commands } from "../core/commands";
 export { Component } from "../core/component";
 export { FileManager } from "../core/file-manager";
+import { parseLinktext } from "../core/metadata-cache";
+import { type CachedMetadata, frontmatterTags, getAllTags as allTags } from "../markdown/metadata";
 export { MetadataCache, parseLinktext } from "../core/metadata-cache";
+export { parseFrontMatterAliases, parseFrontMatterEntry, parseFrontMatterStringArray, parseYaml } from "../markdown/metadata";
+export { Editor } from "../editor/editor";
+export { MarkdownView } from "../ui/markdown-view";
 export { TAbstractFile, TFile, TFolder, Vault } from "../core/vault";
 export { editorInfoField, editorLivePreviewField, livePreviewState } from "../editor/fields";
 export { Events } from "../shared/events";
@@ -41,6 +46,22 @@ export { moment };
 
 /** Nur für `instanceof`-Prüfungen: obsidian-web hat kein Dateisystem im Sinne von Node. */
 export class FileSystemAdapter {}
+
+/** Alle Tags (Text und Frontmatter) mit `#`, oder null ohne Metadaten. */
+export function getAllTags(cache: CachedMetadata | null | undefined): string[] | null {
+  return cache ? allTags(cache) : null;
+}
+
+/** Tags aus dem Frontmatter (`tags`/`tag`) mit `#`, oder null. */
+export function parseFrontMatterTags(frontmatter: Record<string, unknown> | null | undefined): string[] | null {
+  const tags = frontmatterTags(frontmatter ?? undefined);
+  return tags.length ? tags : null;
+}
+
+/** Linkziel ohne `#Abschnitt`/`#^Block`. */
+export function getLinkpath(linktext: string): string {
+  return parseLinktext(linktext).path;
+}
 
 // Obsidian rendert Formeln mit MathJax, obsidian-web mit KaTeX. Die API bleibt dieselbe.
 /** Lädt den Formel-Renderer; danach rendert `renderMath` synchron. */
