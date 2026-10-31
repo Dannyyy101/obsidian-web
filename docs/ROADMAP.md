@@ -122,7 +122,7 @@ für den Rest vor.
 | Überschriften und Listen einklappen | ⬜ |
 | Suchen & Ersetzen in der Notiz (eigene Oberfläche) | ⬜ |
 | Kontextmenü im Editor, Formatierungsbefehle (fett, Link …) | ⬜ |
-| Vim-Modus | ⬜ |
+| Vim-Modus | ✅ `vimMode` aus `app.json` über `@replit/codemirror-vim`; `:w`, `:q`, `:wq`. Ohne `.obsidian.vimrc` |
 | Tabellen-Editor in der Live Preview | ⬜ |
 | Fußnoten rendern | ⬜ |
 

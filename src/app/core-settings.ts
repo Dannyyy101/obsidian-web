@@ -53,6 +53,7 @@ class EditorSettingTab extends CoreSettingTab {
     this.configToggle("Live Preview", "Formatierung beim Schreiben anzeigen. Ausgeschaltet gilt der Quellmodus.", "livePreview", true, () =>
       this.app.workspace.iterateEditors((editor) => editor.reconfigureMode()),
     );
+    this.configToggle("Vim-Tastenbelegung", "Bearbeiten mit Vim-Befehlen (Normal-, Einfüge- und visueller Modus, :w, :q).", "vimMode", false, applyAll);
   }
 }
 
