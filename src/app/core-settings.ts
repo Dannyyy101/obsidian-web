@@ -55,6 +55,7 @@ class EditorSettingTab extends CoreSettingTab {
     );
     this.configToggle("Überschriften einklappen", "Überschriften samt ihrem Abschnitt einklappen.", "foldHeading", true);
     this.configToggle("Listen einklappen", "Listenpunkte samt ihren Unterpunkten einklappen.", "foldIndent", true);
+    this.configToggle("Vim-Tastenbelegung", "Bearbeiten mit Vim-Befehlen (Normal-, Einfüge- und visueller Modus, :w, :q).", "vimMode", false, applyAll);
   }
 }
 

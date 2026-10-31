@@ -2316,4 +2316,21 @@ body {
 
 .markdown-source-view .cm-searchMatch-selected {
   background: rgba(255, 140, 0, 0.55);
+/* Vim-Modus: Blockcursor und Befehlszeile im Stil der Oberfläche. */
+.markdown-source-view .cm-fat-cursor {
+  background: var(--interactive-accent) !important;
+  opacity: 0.6;
+}
+
+.markdown-source-view .cm-vim-panel {
+  padding: 2px var(--size-4-3);
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+  background: var(--background-secondary);
+}
+
+.markdown-source-view .cm-vim-panel input {
+  font: inherit;
+  color: var(--text-normal);
 }

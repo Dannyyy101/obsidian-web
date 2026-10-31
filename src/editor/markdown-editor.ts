@@ -20,6 +20,7 @@ import { FORMATTING_COMMANDS } from "./formatting";
 import { editorInfoField, editorLivePreviewField, livePreviewState, setLivePreview } from "./fields";
 import { folding, restoreFolds } from "./folding";
 import { inlineTitle } from "./inline-title";
+import { vimMode } from "./vim";
 import { listEditing } from "./lists";
 import { editorSuggest } from "./suggest/editor-suggest";
 import { LinkSuggest } from "./suggest/link-suggest";
@@ -79,6 +80,7 @@ export class MarkdownEditor {
   private applyingExternal = false;
   private mode = new Compartment();
   private title = new Compartment();
+  private vim = new Compartment();
   /** Editor-Erweiterungen der Plugins (`registerEditorExtension`). */
   private pluginExtensions = new Compartment();
   private host: LivePreviewHost;
@@ -191,10 +193,10 @@ export class MarkdownEditor {
     return this.vault.getConfig("readableLineLength") !== false;
   }
 
-  /** Editor-Einstellungen aus `app.json` neu anwenden (lesbare Zeilenlänge, Inline-Titel). */
+  /** Editor-Einstellungen aus `app.json` neu anwenden (lesbare Zeilenlänge, Inline-Titel, Vim). */
   applySettings(): void {
     this.sourceViewEl.toggleClass("is-readable-line-width", this.isReadableLineWidth());
-    this.view.dispatch({ effects: this.title.reconfigure(this.titleExtension()) });
+    this.view.dispatch({ effects: [this.title.reconfigure(this.titleExtension()), this.vim.reconfigure(this.vimExtension())] });
     this.renderReading();
   }
 
@@ -215,6 +217,7 @@ export class MarkdownEditor {
     return EditorState.create({
       doc,
       extensions: [
+        this.vim.of(this.vimExtension()),
         history(),
         editorSuggest([new LinkSuggest(this.app), new TagSuggest(this.app)], () => this.file),
         attachmentHandling(this.app, () => this.file),
@@ -276,6 +279,12 @@ export class MarkdownEditor {
 
   getFile(): TFile | null {
     return this.file;
+  }
+
+  /** Obsidians Einstellung `vimMode` (standardmäßig aus); `:q` schließt den aktiven Tab. */
+  private vimExtension() {
+    if (this.vault.getConfig("vimMode") !== true) return [];
+    return vimMode({ save: () => this.save(), close: () => this.app.commands.executeCommandById("workspace:close") });
   }
 
   private titleExtension() {
