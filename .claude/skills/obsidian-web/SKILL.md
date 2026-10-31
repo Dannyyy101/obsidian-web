@@ -28,6 +28,21 @@ Das ausführliche Konzept steht in `docs/KONZEPT.md`. Lies es, bevor du größer
 6. **Halte die Obsidian-DOM-Klassen ein.** Gerenderte Elemente tragen Obsidians Klassennamen und
    CSS-Variablen (`.markdown-rendered`, `.callout[data-callout]`, `.internal-link`, `--text-normal`,
    `--background-primary` …), damit Community-Themes funktionieren.
+7. **Jedes Feature bekommt einen eigenen Branch.** Arbeite nie direkt auf `main`, siehe
+   [Git-Workflow](#git-workflow).
+
+## Git-Workflow
+
+- **Ein Branch pro Feature, bevor die erste Änderung geschrieben wird.** Erzeuge ihn vom aktuellen
+  `main`: `git switch main && git pull && git switch -c feature/<kurzname>`. Der Kurzname ist kebab-case
+  und beschreibt das Feature (`feature/tabs`, `feature/properties-view`).
+- **Fehlerbehebungen** laufen genauso, nur mit dem Präfix `fix/` (`fix/safari-nfd-paths`).
+- **Ein Branch enthält genau ein Feature.** Ergibt sich unterwegs ein zweites, kommt es in einen eigenen
+  Branch.
+- **Parallele Sitzungen** arbeiten in eigenen Worktrees (`git worktree add ../obsidian-web-<kurzname>
+  -b feature/<kurzname>`), damit sie sich nicht gegenseitig Dateien überschreiben.
+- **Vor dem Mergen** müssen `pnpm typecheck && pnpm test` grün sein. Gemergt wird erst nach Freigabe
+  durch den Nutzer.
 
 ## Projektkarte
 

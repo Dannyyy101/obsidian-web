@@ -1,0 +1,48 @@
+# Typecheck, Tests und Build bei jedem Push und Pull Request.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.4.1
+
+      - uses: actions/setup-node@v4
+        with:
+          # Wie im Dockerfile; server/prod.ts braucht Node mit TypeScript-Unterstützung.
+          node-version: 24
+          cache: pnpm
+
+      # remotely-save wird per postinstall von GitHub-Releases geladen; der Cache spart den Download.
+      - uses: actions/cache@v4
+        with:
+          path: public/bundled-plugins
+          key: bundled-plugins-${{ hashFiles('scripts/fetch-plugins.mjs') }}
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm exec vite build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          retention-days: 7
