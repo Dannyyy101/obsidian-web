@@ -5,6 +5,7 @@ import { FileManager } from "../core/file-manager";
 import { MetadataCache, type MetadataParser, type MetadataStore } from "../core/metadata-cache";
 import type { TFile, Vault } from "../core/vault";
 import { join } from "../shared/path";
+import { openDocumentSearch } from "../editor/document-search";
 import { MarkdownEditor } from "../editor/markdown-editor";
 import { CommandPalette } from "../ui/command-palette";
 import { promptText } from "../ui/dialogs";
@@ -183,6 +184,20 @@ export class App {
         return true;
       },
     });
+    for (const [id, name, replace] of [
+      ["editor:open-search", "Suchen in der aktuellen Notiz", false],
+      ["editor:open-search-replace", "Suchen und Ersetzen in der aktuellen Notiz", true],
+    ] as const) {
+      this.commands.addCommand({
+        id,
+        name,
+        checkCallback: (checking) => {
+          if (!this.editor.getFile() || this.editor.isReading()) return false;
+          if (!checking) openDocumentSearch(this.editor.editor.cm, replace);
+          return true;
+        },
+      });
+    }
     this.commands.addCommand({
       id: "switcher:open",
       name: "Schnellwechsler: Öffnen",

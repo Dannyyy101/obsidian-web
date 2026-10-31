@@ -120,7 +120,7 @@ für den Rest vor.
 | Bilder einfügen/ablegen (Ablage nach `attachmentFolderPath`) | ⬜ |
 | Syntax-Highlighting in Codeblöcken, Kopieren-Knopf | ⬜ |
 | Überschriften und Listen einklappen | ⬜ |
-| Suchen & Ersetzen in der Notiz (eigene Oberfläche) | ⬜ |
+| Suchen & Ersetzen in der Notiz (eigene Oberfläche) | ✅ Cmd/Strg+F, Cmd/Strg+Alt+F; Groß-/Kleinschreibung, reguläre Ausdrücke, Trefferzähler |
 | Kontextmenü im Editor, Formatierungsbefehle (fett, Link …) | ⬜ |
 | Vim-Modus | ⬜ |
 | Tabellen-Editor in der Live Preview | ⬜ |

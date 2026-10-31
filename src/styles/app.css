@@ -2091,3 +2091,91 @@ body {
 .graph-controls .mod-search-setting .setting-item-info {
   display: none;
 }
+
+/* Suchen & Ersetzen in der Notiz (Obsidians `.document-search-container`). */
+.markdown-source-view .cm-panels {
+  background: var(--background-primary);
+  color: var(--text-normal);
+}
+
+.markdown-source-view .cm-panels-top {
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.document-search-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-2);
+  padding: var(--size-4-2) var(--size-4-3);
+  font-family: var(--font-interface);
+  font-size: var(--font-ui-small);
+}
+
+.document-search,
+.document-replace {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-1);
+}
+
+.document-search-input,
+.document-replace-input {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 8px;
+  font: inherit;
+  color: var(--text-normal);
+  background: var(--background-modifier-form-field);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  outline: none;
+}
+
+.document-search-input:focus,
+.document-replace-input:focus {
+  border-color: var(--interactive-accent);
+}
+
+.document-search-input.mod-invalid {
+  border-color: var(--text-error);
+}
+
+.document-search-count {
+  min-width: 5em;
+  text-align: right;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  white-space: nowrap;
+}
+
+.document-search-count.mod-no-results {
+  color: var(--text-error);
+}
+
+.document-search-button.is-active {
+  color: var(--text-accent);
+  background: var(--background-modifier-hover);
+}
+
+.document-replace-button {
+  padding: 4px 10px;
+  font: inherit;
+  color: var(--text-normal);
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  cursor: pointer;
+}
+
+.document-replace-button:hover {
+  background: var(--background-modifier-hover);
+}
+
+.markdown-source-view .cm-searchMatch {
+  background: rgba(255, 208, 0, 0.35);
+  border-radius: 2px;
+}
+
+.markdown-source-view .cm-searchMatch-selected {
+  background: rgba(255, 140, 0, 0.55);
+}
