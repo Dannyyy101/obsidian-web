@@ -1,6 +1,6 @@
 # obsidian-web – Roadmap
 
-Stand: 2026-10-31 · Grundlage: Code im Repository (Typecheck grün, 120 Unit-Tests und 16 E2E-Tests in Chromium, Firefox und WebKit grün)
+Stand: 2026-10-31 · Grundlage: Code im Repository (Typecheck grün, 131 Unit-Tests und 17 E2E-Tests in Chromium, Firefox und WebKit grün)
 
 Ziel ist eine vollständige Abbildung von Obsidian im Browser (siehe `docs/KONZEPT.md`). Diese Datei
 zeigt, was davon umgesetzt ist, was nur teilweise geht und was fehlt, und schlägt eine Reihenfolge
@@ -109,7 +109,7 @@ für den Rest vor.
 |---|---|
 | Listen beim Enter fortsetzen, Einrücken/Ausrücken von Listen | ✅ `useTab`, `tabSize`, `smartIndentList` aus `app.json`; beim Einrücken wird eine nummerierte Liste noch nicht neu bei 1 begonnen |
 | Autovervollständigung für `[[Links]]` und `#Tags` | ✅ Dateien, Aliasse, `#Überschrift`, `#^Block`; noch ohne `[[##` (vaultweit), nicht verlinkte Ziele und Tags im Frontmatter |
-| Klammern und Markdown-Zeichen automatisch schließen | ⬜ |
+| Klammern und Markdown-Zeichen automatisch schließen | ✅ `autoPairBrackets`, `autoPairMarkdown` aus `app.json` |
 | Bilder einfügen/ablegen (Ablage nach `attachmentFolderPath`) | ⬜ |
 | Syntax-Highlighting in Codeblöcken, Kopieren-Knopf | ⬜ |
 | Überschriften und Listen einklappen | ⬜ |

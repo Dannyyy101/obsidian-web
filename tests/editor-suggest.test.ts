@@ -6,6 +6,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import type { App } from "../src/app/app";
 import { MetadataCache } from "../src/core/metadata-cache";
 import { Vault } from "../src/core/vault";
+import { autoPair } from "../src/editor/auto-pair";
 import { listEditing } from "../src/editor/lists";
 import { editorSuggest, type EditorSuggest } from "../src/editor/suggest/editor-suggest";
 import { LinkSuggest } from "../src/editor/suggest/link-suggest";
@@ -44,6 +45,7 @@ function editor(app: App, doc: string, file = "Notiz.md") {
         markdown({ base: markdownLanguage, extensions: obsidianLezerExtensions }),
         editorSuggest(suggests, () => app.vault.getFileByPath(file)),
         listEditing({ useTab: true, tabSize: 4, smartIndentList: true }),
+        autoPair({ autoPairBrackets: true, autoPairMarkdown: true }),
       ],
     }),
   });
@@ -163,6 +165,21 @@ describe("Vorschläge im Editor", () => {
     expect(await titles()).toEqual(["idee"]);
     key("Tab");
     expect(text()).toBe("- [[Plan]] #idee |");
+    view.destroy();
+  });
+
+  it("übernimmt die von autoPair eingefügten ]]", async () => {
+    const { view, key, text } = editor(app, "|", "Ordner/Plan.md");
+    // Über die Input-Handler tippen, wie die Tastatur: `[[` wird zu `[[]]`.
+    for (const ch of "[[pla") {
+      const { from, to } = view.state.selection.main;
+      const insert = () => view.state.update({ changes: { from, to, insert: ch }, selection: { anchor: from + 1 }, userEvent: "input.type" });
+      if (!view.state.facet(EditorView.inputHandler).some((h) => h(view, from, to, ch, insert))) view.dispatch(insert());
+    }
+    expect(text()).toBe("[[pla|]]");
+    expect(await titles()).toEqual(["Plan"]);
+    key("Enter");
+    expect(text()).toBe("[[Plan]]|");
     view.destroy();
   });
 

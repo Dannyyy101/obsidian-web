@@ -11,6 +11,7 @@ import { obsidianLezerExtensions } from "../markdown/syntax";
 import { setIcon } from "../ui/icons";
 import { Notice } from "../ui/notice";
 import { join } from "../shared/path";
+import { autoPair } from "./auto-pair";
 import { inlineTitle } from "./inline-title";
 import { listEditing } from "./lists";
 import { editorSuggest } from "./suggest/editor-suggest";
@@ -197,6 +198,10 @@ export class MarkdownEditor {
         drawSelection(),
         dropCursor(),
         highlightSelectionMatches(),
+        autoPair({
+          autoPairBrackets: this.vault.getConfig("autoPairBrackets") !== false,
+          autoPairMarkdown: this.vault.getConfig("autoPairMarkdown") !== false,
+        }),
         listEditing({
           useTab: this.vault.getConfig("useTab") !== false,
           tabSize: Number(this.vault.getConfig("tabSize")) || 4,
