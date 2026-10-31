@@ -19,6 +19,13 @@ export class Sidebar {
   private views: SidebarView[] = [];
   private tabs = new Map<string, HTMLElement>();
   private active: SidebarView | null = null;
+  /**
+   * Auf dem Smartphone liegt die Seitenleiste als Schublade über dem Inhalt. Ihr Auf/Zu-Zustand
+   * wird dann nicht gespeichert, damit der Desktop-Zustand desselben Vaults erhalten bleibt.
+   */
+  overlay = false;
+  /** Wird nach jedem Ein- oder Ausklappen aufgerufen. */
+  onCollapseChange?: (collapsed: boolean) => void;
 
   constructor(
     private el: HTMLElement,
@@ -39,7 +46,8 @@ export class Sidebar {
 
   private save() {
     try {
-      localStorage.setItem(this.storageKey, JSON.stringify({ active: this.active?.id, collapsed: this.isCollapsed() }));
+      const collapsed = this.overlay ? this.load().collapsed : this.isCollapsed();
+      localStorage.setItem(this.storageKey, JSON.stringify({ active: this.active?.id, collapsed }));
     } catch {
       // Ohne localStorage geht nur der Zustand über Neuladen hinweg verloren.
     }
@@ -85,6 +93,12 @@ export class Sidebar {
     this.el.toggleClass("is-collapsed", collapsed);
     if (!collapsed) this.active?.onShow?.();
     this.save();
+    this.onCollapseChange?.(collapsed);
+  }
+
+  /** Gespeicherten Auf/Zu-Zustand wiederherstellen (beim Wechsel vom Smartphone- ins Desktop-Layout). */
+  restoreCollapsed(): void {
+    this.setCollapsed(this.load().collapsed === true);
   }
 
   toggle(): void {

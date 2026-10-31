@@ -39,8 +39,26 @@ async function openVault(name: string, root: HTMLElement) {
   if (uri && !(await app.handleObsidianUri(uri))) new Notice("Die übergebene Obsidian-URI konnte nicht ausgeführt werden.");
 }
 
+/**
+ * Sichtbare Höhe als `--viewport-height`: Safari auf iOS verkleinert beim Einblenden der
+ * Bildschirmtastatur nur den „visual viewport“, sonst läge der Editor teils hinter der Tastatur.
+ */
+function trackViewportHeight() {
+  const viewport = window.visualViewport;
+  if (!viewport) return;
+  const update = () => {
+    document.documentElement.style.setProperty("--viewport-height", `${viewport.height}px`);
+    // iOS schiebt die Seite beim Fokussieren nach oben, obwohl sie nicht scrollbar ist.
+    if (window.scrollY) window.scrollTo(0, 0);
+  };
+  viewport.addEventListener("resize", update);
+  viewport.addEventListener("scroll", update);
+  update();
+}
+
 async function main() {
   installDomExtensions();
+  trackViewportHeight();
   followSystemTheme();
   const root = document.getElementById("app")!;
   const params = new URLSearchParams(location.search);

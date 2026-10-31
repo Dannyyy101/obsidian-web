@@ -77,6 +77,7 @@ export class App {
     this.workspace.registerView(GRAPH_VIEW_TYPE, () => new GraphView(this));
     this.addSidebarToggle(this.workspace.tabBarLeftEl, this.leftSidebar, "panel-left", "Linke Seitenleiste");
     this.addSidebarToggle(this.workspace.tabBarRightEl, this.rightSidebar, "panel-right", "Rechte Seitenleiste");
+    this.setupPhoneLayout();
     // Ungespeicherte Änderungen aller Tabs schreiben, bevor Links in Dateien angepasst werden.
     this.fileManager.beforeRename = async () => {
       const editors: MarkdownEditor[] = [];
@@ -123,6 +124,45 @@ export class App {
   }
 
   /**
+   * Auf schmalen Bildschirmen werden die Seitenleisten zu Schubladen über dem Inhalt (wie in
+   * Obsidian Mobile): nur eine ist offen, ein Tipp daneben oder das Öffnen einer Datei schließt sie.
+   */
+  private setupPhoneLayout() {
+    const sidebars = [this.leftSidebar, this.rightSidebar];
+    const workspaceEl = this.workspace.leftSplitEl.parentElement!;
+    const backdrop = workspaceEl.createDiv("workspace-drawer-backdrop");
+    backdrop.addEventListener("click", () => this.closeDrawers());
+    // Ribbon-Aktionen (Graph, Einstellungen, Plugins) öffnen etwas im Hauptbereich.
+    this.workspace.ribbonEl.addEventListener("click", () => this.closeDrawers());
+    for (const sidebar of sidebars) {
+      sidebar.onCollapseChange = (collapsed) => {
+        if (sidebar.overlay && !collapsed) for (const other of sidebars) if (other !== sidebar) other.setCollapsed(true);
+        workspaceEl.toggleClass("is-left-sidedock-open", !this.leftSidebar.isCollapsed());
+        workspaceEl.toggleClass("is-right-sidedock-open", !this.rightSidebar.isCollapsed());
+      };
+    }
+    const phone = window.matchMedia(App.PHONE_QUERY);
+    const apply = () => {
+      document.body.toggleClass("is-phone", phone.matches);
+      for (const sidebar of sidebars) {
+        sidebar.overlay = phone.matches;
+        if (phone.matches) sidebar.setCollapsed(true);
+        else sidebar.restoreCollapsed();
+      }
+    };
+    apply();
+    phone.addEventListener("change", apply);
+    this.workspace.on("file-open", () => this.closeDrawers());
+  }
+
+  private static PHONE_QUERY = "(max-width: 768px)";
+
+  /** Schließt die Seitenleisten, wenn sie als Schubladen über dem Inhalt liegen. */
+  closeDrawers(): void {
+    for (const sidebar of [this.leftSidebar, this.rightSidebar]) if (sidebar.overlay && !sidebar.isCollapsed()) sidebar.setCollapsed(true);
+  }
+
+  /**
    * Datei öffnen und optional einen Bereich auswählen (Suche, Backlinks, Gliederung).
    * `newLeaf` öffnet in einem neuen Tab.
    */
@@ -131,6 +171,7 @@ export class App {
       new Notice(`Dateityp „.${file.extension}“ kann noch nicht geöffnet werden.`);
       return;
     }
+    this.closeDrawers();
     const { editor } = this.workspace.getLeaf(newLeaf);
     await editor.openFile(file);
     if (from !== undefined) await editor.scrollToRange(from, to);

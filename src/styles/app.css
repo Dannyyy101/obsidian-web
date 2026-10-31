@@ -159,7 +159,8 @@ body {
 }
 
 #app {
-  height: 100%;
+  /* Sichtbare Höhe ohne Bildschirmtastatur, siehe `trackViewportHeight` in main.ts. */
+  height: var(--viewport-height, 100dvh);
 }
 
 button,
@@ -182,6 +183,8 @@ textarea {
   display: flex;
   flex-direction: column;
   height: 100%;
+  /* Notch und Home-Indikator, wenn die Seite als Web-App bildschirmfüllend läuft. */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 .workspace {
@@ -2033,29 +2036,6 @@ button:disabled {
   color: var(--text-error);
 }
 
-/* --- Schmale Bildschirme -------------------------------------------------------------------- */
-
-@media (max-width: 700px) {
-  body {
-    --sidebar-width: 200px;
-    --ribbon-width: 40px;
-  }
-
-  .vertical-tabs-container {
-    flex-direction: column;
-  }
-
-  .vertical-tab-header {
-    width: auto;
-    max-height: 30%;
-  }
-
-  .setting-item {
-    flex-direction: column;
-    align-items: stretch;
-  }
-}
-
 /* --- Graph (global als Tab, lokal in der Seitenleiste) --------------------------------------- */
 
 body {
@@ -2380,6 +2360,8 @@ body {
 
 .markdown-source-view .cm-searchMatch-selected {
   background: rgba(255, 140, 0, 0.55);
+}
+
 /* Vim-Modus: Blockcursor und Befehlszeile im Stil der Oberfläche. */
 .markdown-source-view .cm-fat-cursor {
   background: var(--interactive-accent) !important;
@@ -2397,6 +2379,8 @@ body {
 .markdown-source-view .cm-vim-panel input {
   font: inherit;
   color: var(--text-normal);
+}
+
 /* Fußnoten: Verweise hochgestellt, Liste am Ende des Lesemodus. */
 .footnote-ref {
   font-size: 0.75em;
@@ -2435,4 +2419,245 @@ body {
 
 .markdown-rendered .footnotes-list p {
   margin: 0.25em 0;
+}
+
+/* --- Touch-Geräte ---------------------------------------------------------------------------- */
+
+/* Ohne Maus gibt es kein Hover: Bedienelemente, die sonst erst beim Überfahren erscheinen, bleiben sichtbar. */
+@media (hover: none) {
+  .workspace-tab-header-inner-close-button,
+  .cm-table-editor .table-row-btn,
+  .cm-table-editor .table-col-btn,
+  .markdown-embed > .markdown-embed-link,
+  .markdown-rendered pre .copy-code-button {
+    opacity: 1;
+  }
+
+  .cm-fold-indicator {
+    opacity: 0.6;
+  }
+
+  .search-result-file-match .search-result-hover-button {
+    display: block;
+  }
+}
+
+/* Größere Tippflächen für Finger. */
+@media (pointer: coarse) {
+  .clickable-icon {
+    padding: 10px;
+  }
+
+  .tree-item-self,
+  .search-result-file-title,
+  .suggestion-item,
+  .vertical-tab-nav-item {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .menu-item {
+    padding: 10px 12px;
+  }
+
+  .workspace-tab-header-inner-close-button {
+    padding: 6px;
+  }
+
+  /* iOS zoomt beim Fokussieren in Felder mit weniger als 16px Schrift. */
+  input[type="text"],
+  input[type="search"],
+  input[type="password"],
+  input[type="number"],
+  textarea,
+  select,
+  .prompt-input {
+    font-size: 16px !important;
+  }
+}
+
+/* --- Smartphone (gleiche Grenze wie App.PHONE_QUERY) ------------------------------------------ */
+
+@media (max-width: 768px) {
+  body {
+    --file-margins: var(--size-4-4);
+    --sidebar-width: min(320px, calc(100vw - var(--ribbon-width) - 40px));
+  }
+
+  /* Seitenleisten als Schubladen über dem Inhalt; die Ribbon fährt mit der linken herein. */
+  .workspace {
+    position: relative;
+  }
+
+  .workspace-ribbon,
+  .mod-left-split,
+  .mod-right-split {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 20;
+    box-shadow: 0 0 24px rgba(0, 0, 0, 0.35);
+  }
+
+  .workspace-ribbon {
+    left: 0;
+    display: none;
+    box-shadow: none;
+  }
+
+  .workspace.is-left-sidedock-open > .workspace-ribbon {
+    display: flex;
+  }
+
+  .mod-left-split {
+    left: var(--ribbon-width);
+  }
+
+  .mod-right-split {
+    right: 0;
+  }
+
+  .mod-sidedock:not(.is-collapsed) {
+    animation: drawer-in-left 0.18s ease-out;
+  }
+
+  .mod-right-split:not(.is-collapsed) {
+    animation-name: drawer-in-right;
+  }
+
+  .workspace-drawer-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 15;
+    background: var(--background-modifier-cover);
+    display: none;
+  }
+
+  .workspace.is-left-sidedock-open > .workspace-drawer-backdrop,
+  .workspace.is-right-sidedock-open > .workspace-drawer-backdrop {
+    display: block;
+  }
+
+  /* Tabs: kompakter, Tab-Leiste bleibt horizontal scrollbar. */
+  .workspace-tabs .workspace-tab-header {
+    flex: 0 0 auto;
+    min-width: 0;
+    max-width: 50vw;
+  }
+
+  .status-bar {
+    display: none;
+  }
+
+  .markdown-reading-view {
+    padding-left: var(--file-margins);
+    padding-right: var(--file-margins);
+  }
+
+  /* Breite Inhalte scrollen für sich, statt die Notiz zu verbreitern. */
+  .markdown-rendered table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .markdown-rendered img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Dialoge nutzen die volle Breite; Prompts sitzen oben, damit die Tastatur sie nicht verdeckt. */
+  .modal,
+  .prompt {
+    width: calc(100vw - 16px);
+    max-height: calc(100% - 16px);
+  }
+
+  .prompt {
+    margin-top: 8px;
+  }
+
+  .prompt-results {
+    max-height: none;
+  }
+
+  .modal.mod-settings {
+    width: 100%;
+    height: 100%;
+    max-height: none;
+    border-radius: 0;
+    border: none;
+  }
+
+  /* Einstellungen: Reiterliste oben als horizontal scrollbare Leiste. */
+  .vertical-tabs-container {
+    flex-direction: column;
+  }
+
+  .vertical-tab-header {
+    width: auto;
+    display: flex;
+    gap: var(--size-4-1);
+    padding: var(--size-4-2) 48px var(--size-4-2) var(--size-4-2);
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+
+  .vertical-tab-header-group {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-1);
+  }
+
+  .vertical-tab-header-group-items {
+    display: flex;
+    gap: var(--size-4-1);
+  }
+
+  .vertical-tab-header-group-title {
+    display: none;
+  }
+
+  .vertical-tab-nav-item {
+    white-space: nowrap;
+  }
+
+  .vertical-tab-content-container {
+    padding: var(--size-4-3) var(--size-4-4) var(--size-4-4);
+  }
+
+  .setting-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--size-4-2);
+  }
+
+  .setting-item-control {
+    flex-wrap: wrap;
+  }
+
+  .notice-container {
+    left: 12px;
+    right: 12px;
+    max-width: none;
+  }
+
+  .menu {
+    max-width: calc(100vw - 16px);
+  }
+}
+
+@keyframes drawer-in-left {
+  from {
+    transform: translateX(-24px);
+    opacity: 0;
+  }
+}
+
+@keyframes drawer-in-right {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
 }
