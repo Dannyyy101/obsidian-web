@@ -121,7 +121,7 @@ für den Rest vor.
 | Syntax-Highlighting in Codeblöcken, Kopieren-Knopf | ✅ Sprachen aus `@codemirror/language-data`, im Lesemodus mit Prism-Klassen (`.token.keyword`) |
 | Überschriften und Listen einklappen | ✅ `foldHeading`, `foldIndent`; Zustand pro Datei im `localStorage`; Befehle `editor:toggle-fold`, `editor:fold-all`, `editor:unfold-all`. Im Lesemodus noch nicht |
 | Suchen & Ersetzen in der Notiz (eigene Oberfläche) | ✅ Cmd/Strg+F, Cmd/Strg+Alt+F; Groß-/Kleinschreibung, reguläre Ausdrücke, Trefferzähler |
-| Kontextmenü im Editor, Formatierungsbefehle (fett, Link …) | ⬜ |
+| Kontextmenü im Editor, Formatierungsbefehle (fett, Link …) | ✅ Befehls-IDs wie Obsidian (`editor:toggle-bold` …), Kürzel Cmd/Strg+B, I, K, /, Enter; Untermenüs (`MenuItem.setSubmenu`), Event `editor-menu` |
 | Vim-Modus | ⬜ |
 | Tabellen-Editor in der Live Preview | ⬜ |
 | Fußnoten rendern | ⬜ |

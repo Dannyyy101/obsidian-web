@@ -8,6 +8,7 @@ import { join } from "../shared/path";
 import type { EditorView } from "@codemirror/view";
 import { openDocumentSearch } from "../editor/document-search";
 import { foldAll, toggleFold, unfoldAll } from "../editor/folding";
+import { FORMATTING_COMMANDS } from "../editor/formatting";
 import { MarkdownEditor } from "../editor/markdown-editor";
 import { CommandPalette } from "../ui/command-palette";
 import { promptText } from "../ui/dialogs";
@@ -209,6 +210,18 @@ export class App {
         checkCallback: (checking) => {
           if (!this.editor.getFile() || this.editor.isReading()) return false;
           if (!checking) openDocumentSearch(this.editor.editor.cm, replace);
+          return true;
+        },
+      });
+    }
+    for (const command of FORMATTING_COMMANDS) {
+      this.commands.addCommand({
+        id: command.id,
+        name: command.name,
+        icon: command.icon,
+        checkCallback: (checking) => {
+          if (!this.editor.getFile() || this.editor.isReading()) return false;
+          if (!checking) command.run(this.editor.editor.cm);
           return true;
         },
       });

@@ -15,6 +15,8 @@ import { attachmentHandling } from "./attachments";
 import { autoPair } from "./auto-pair";
 import { documentSearch } from "./document-search";
 import { Editor } from "./editor";
+import { showEditorMenu } from "./editor-menu";
+import { FORMATTING_COMMANDS } from "./formatting";
 import { editorInfoField, editorLivePreviewField, livePreviewState, setLivePreview } from "./fields";
 import { folding, restoreFolds } from "./folding";
 import { inlineTitle } from "./inline-title";
@@ -233,7 +235,27 @@ export class MarkdownEditor {
           tabSize: Number(this.vault.getConfig("tabSize")) || 4,
           smartIndentList: this.vault.getConfig("smartIndentList") !== false,
         }),
-        keymap.of([...defaultKeymap, ...historyKeymap, ...searchKeymap]),
+        keymap.of([
+          // Vor defaultKeymap, das z. B. Mod-Enter, Mod-i und Mod-/ anders belegt.
+          ...FORMATTING_COMMANDS.filter((c) => c.key).map((c) => ({ key: c.key, run: c.run, preventDefault: true })),
+          ...defaultKeymap,
+          ...historyKeymap,
+          ...searchKeymap,
+        ]),
+        EditorView.domEventHandlers({
+          contextmenu: (evt, view) => {
+            // Mit Umschalt bleibt das Menü des Browsers (z. B. für Rechtschreibvorschläge).
+            if (evt.shiftKey) return false;
+            const pos = view.posAtCoords({ x: evt.clientX, y: evt.clientY });
+            if (pos !== null && !view.state.selection.ranges.some((r) => r.from <= pos && r.to >= pos)) {
+              view.dispatch({ selection: { anchor: pos } });
+            }
+            showEditorMenu(view, evt, (menu) =>
+              this.app.workspace.trigger("editor-menu", menu, this.editor, { app: this.app, file: this.file, editor: this.editor }),
+            );
+            return true;
+          },
+        }),
         markdown({ base: markdownLanguage, extensions: obsidianLezerExtensions, codeLanguages }),
         syntaxHighlighting(obsidianHighlight),
         syntaxHighlighting(codeHighlightStyle),
