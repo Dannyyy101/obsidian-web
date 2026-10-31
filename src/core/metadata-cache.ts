@@ -1,4 +1,4 @@
-import { type CachedMetadata, computeMetadata, type ReferenceCache } from "../markdown/metadata";
+import { type CachedMetadata, computeMetadata, getAllTags, type ReferenceCache } from "../markdown/metadata";
 import { Events } from "../shared/events";
 import { dirname, join, unicodeKey } from "../shared/path";
 import { type TAbstractFile, TFile, type Vault } from "./vault";
@@ -181,6 +181,23 @@ export class MetadataCache extends Events {
     this.resolvedLinks = {};
     this.unresolvedLinks = {};
     for (const file of this.vault.getMarkdownFiles()) this.resolveFile(file);
+  }
+
+  /**
+   * Alle Tags im Vault mit Anzahl (`#tag` → n), wie Obsidians `getTags`. Groß-/Kleinschreibung
+   * wird zusammengefasst; es gilt die zuerst gefundene Schreibweise.
+   */
+  getTags(): Record<string, number> {
+    const counts = new Map<string, { tag: string; count: number }>();
+    for (const { meta } of this.cache.values()) {
+      for (const tag of getAllTags(meta)) {
+        const key = tag.normalize("NFC").toLowerCase();
+        const entry = counts.get(key);
+        if (entry) entry.count++;
+        else counts.set(key, { tag, count: 1 });
+      }
+    }
+    return Object.fromEntries([...counts.values()].map(({ tag, count }) => [tag, count]));
   }
 
   /** Backlinks: Quelle → Verweise in dieser Quelle, die auf `file` zeigen. */

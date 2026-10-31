@@ -1,4 +1,4 @@
-import { activeEditor, activeView, expect, expectOpen, openFromExplorer, test } from "./fixtures";
+import { activeEditor, activeView, expect, expectOpen, openFromExplorer, readVaultFile, test } from "./fixtures";
 
 test("Live Preview rendert Callouts, Links und Aufgaben", async ({ vault: page }) => {
   await openFromExplorer(page, "Willkommen.md");
@@ -26,4 +26,20 @@ test("Lesemodus rendert die Notiz und schaltet zurück", async ({ vault: page })
   await page.keyboard.press("ControlOrMeta+E");
   await expect(reading).toBeHidden();
   await expect(activeEditor(page)).toBeVisible();
+});
+
+test("[[ und # schlagen Notizen und Tags vor und fügen die Auswahl ein", async ({ vault: page, vaultName }) => {
+  await openFromExplorer(page, "Projekte/Plan.md");
+  await activeEditor(page).click();
+  await page.keyboard.press("ControlOrMeta+End");
+  await page.keyboard.type(" [[Willk");
+  const suggestions = page.locator(".suggestion-container .suggestion-item");
+  await expect(suggestions.first()).toContainText("Willkommen");
+  await page.keyboard.press("Enter");
+  await page.keyboard.type(" #sta");
+  await expect(suggestions.first()).toContainText("start");
+  await page.keyboard.press("Enter");
+  await expect(suggestions).toHaveCount(0);
+
+  await expect.poll(() => readVaultFile(page, vaultName, "Projekte/Plan.md"), { timeout: 10_000 }).toContain(" [[Willkommen]] #start ");
 });
