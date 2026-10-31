@@ -1,4 +1,5 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { test as base, expect, type Page } from "@playwright/test";
 
@@ -74,13 +75,16 @@ export async function openVault(page: Page, name: string) {
 export const test = base.extend<{ vaultName: string; vault: Page }>({
   /**
    * WebKit erlaubt OPFS nur mit dauerhaftem Profil, Playwright-Kontexte sind sonst flüchtig.
-   * Jeder Test bekommt ein eigenes Profil im Ausgabeordner.
+   * Jeder Test bekommt ein eigenes Profil in einem temporären Ordner. Nicht im Ausgabeordner, denn
+   * dessen Name enthält den Testtitel, und WebKit unter Linux bricht bei Umlauten im Pfad ab.
    */
-  context: async ({ browserName, context, playwright, baseURL, viewport }, use, testInfo) => {
+  context: async ({ browserName, context, playwright, baseURL, viewport }, use) => {
     if (browserName !== "webkit") return use(context);
-    const persistent = await playwright.webkit.launchPersistentContext(testInfo.outputPath("profile"), { baseURL, viewport });
+    const profile = mkdtempSync(join(tmpdir(), "obsidian-web-e2e-"));
+    const persistent = await playwright.webkit.launchPersistentContext(profile, { baseURL, viewport });
     await use(persistent);
     await persistent.close();
+    rmSync(profile, { recursive: true, force: true });
   },
 
   /**
