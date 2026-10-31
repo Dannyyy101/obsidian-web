@@ -132,4 +132,14 @@ describe("Live Preview", () => {
       expect(content?.querySelector("p")?.innerHTML).toBe("Eingebetteter <strong>Text</strong>");
     });
   });
+
+  it("zeigt bei Codeblöcken Sprache und Kopieren-Knopf statt der Zaunzeile", () => {
+    const doc = "Text\n```js\nlet a = 1;\n```\nEnde";
+    const view = editor(doc, doc.length);
+    expect(view.contentDOM.querySelector(".code-block-flair-lang")?.textContent).toBe("js");
+    expect(view.contentDOM.querySelector(".code-block-flair")?.textContent).toBe("Kopieren");
+    const cursorInside = editor(doc, doc.indexOf("let"));
+    expect(cursorInside.contentDOM.querySelector(".code-block-flair")).toBeNull();
+    expect(lineText(cursorInside, 2)).toBe("```js");
+  });
 });

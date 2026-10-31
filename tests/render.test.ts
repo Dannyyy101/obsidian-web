@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import type { LivePreviewHost } from "../src/editor/live-preview/host";
 import type { RenderContext } from "../src/editor/render/context";
 import { renderMarkdown } from "../src/editor/render/markdown";
@@ -94,5 +94,16 @@ describe("Markdown-Renderer", () => {
   it("Frontmatter und Block-IDs werden nicht angezeigt", () => {
     const el = render("---\ntags: [a]\n---\nText ^abc");
     expect(el.textContent).toBe("Text");
+  });
+
+  it("hebt Codeblöcke hervor und bietet einen Kopieren-Knopf", async () => {
+    const el = render("```js\nconst a = \"x\"; // hi\n```");
+    expect(el.querySelector("pre > button.copy-code-button")?.textContent).toBe("Kopieren");
+    const code = el.querySelector("pre > code.language-js")!;
+    await vi.waitFor(() => expect(code.classList.contains("is-loaded")).toBe(true), { timeout: 5000 });
+    expect(code.querySelector(".token.keyword")?.textContent).toBe("const");
+    expect(code.querySelector(".token.string")?.textContent).toBe('"x"');
+    expect(code.querySelector(".token.comment")?.textContent).toBe("// hi");
+    expect(code.textContent).toBe('const a = "x"; // hi');
   });
 });

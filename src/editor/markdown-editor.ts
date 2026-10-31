@@ -20,6 +20,7 @@ import { editorSuggest } from "./suggest/editor-suggest";
 import { LinkSuggest } from "./suggest/link-suggest";
 import { TagSuggest } from "./suggest/tag-suggest";
 import { livePreview, sourceModeDecorations } from "./live-preview/decorations";
+import { codeHighlightStyle, codeLanguages } from "./render/code";
 import { renderMarkdown } from "./render/markdown";
 import { type LivePreviewHost, mimeType } from "./live-preview/host";
 
@@ -224,8 +225,9 @@ export class MarkdownEditor {
           smartIndentList: this.vault.getConfig("smartIndentList") !== false,
         }),
         keymap.of([...defaultKeymap, ...historyKeymap, ...searchKeymap]),
-        markdown({ base: markdownLanguage, extensions: obsidianLezerExtensions }),
+        markdown({ base: markdownLanguage, extensions: obsidianLezerExtensions, codeLanguages }),
         syntaxHighlighting(obsidianHighlight),
+        syntaxHighlighting(codeHighlightStyle),
         this.mode.of(this.modeExtension()),
         this.title.of(this.titleExtension()),
         editorInfoField.init(() => ({ app: this.app, file: this.file, editor: this.editor })),

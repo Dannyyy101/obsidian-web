@@ -1,5 +1,6 @@
 import { type EditorView, WidgetType } from "@codemirror/view";
 import { isExternalUrl, type LivePreviewHost } from "./host";
+import { copyCode } from "../render/code";
 import type { RenderContext } from "../render/context";
 import { renderEmbed } from "../render/embed";
 import { renderMarkdown } from "../render/markdown";
@@ -80,6 +81,36 @@ export class CheckboxWidget extends WidgetType {
 
   ignoreEvent() {
     return true;
+  }
+}
+
+/** Sprache und Kopieren-Knopf in der ersten Zeile eines Codeblocks. */
+export class CodeFlairWidget extends WidgetType {
+  constructor(
+    private lang: string,
+    private code: string,
+  ) {
+    super();
+  }
+
+  eq(other: CodeFlairWidget) {
+    return other.lang === this.lang && other.code === this.code;
+  }
+
+  toDOM() {
+    const wrap = createSpan("code-block-flair-wrapper");
+    if (this.lang) wrap.createSpan({ cls: "code-block-flair-lang", text: this.lang });
+    const button = wrap.createSpan({ cls: "code-block-flair", text: "Kopieren", attr: { "aria-label": "Code kopieren" } });
+    button.addEventListener("mousedown", (evt) => evt.preventDefault());
+    button.addEventListener("click", (evt) => {
+      evt.preventDefault();
+      copyCode(this.code, button, "Kopieren");
+    });
+    return wrap;
+  }
+
+  ignoreEvent(evt: Event) {
+    return (evt.target as HTMLElement).closest?.(".code-block-flair") != null;
   }
 }
 

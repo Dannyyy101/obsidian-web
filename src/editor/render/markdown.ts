@@ -3,6 +3,7 @@ import { obsidianMarkdownParser } from "../../markdown/syntax";
 import { followLink } from "../live-preview/widgets";
 import { parseCallout, renderCalloutShell } from "./callout";
 import type { RenderContext } from "./context";
+import { copyCode, highlightCodeElement } from "./code";
 import { renderInline, renderInlineChildren } from "./inline";
 import { mathSource, renderMath } from "./math";
 import { renderMermaid } from "./mermaid";
@@ -84,7 +85,14 @@ function renderBlock(text: string, node: SyntaxNode, el: HTMLElement, ctx: Rende
       const code = codeText(text, node);
       if (lang === "mermaid") return renderMermaid(code, el.createDiv());
       const pre = el.createEl("pre", { cls: lang ? `language-${lang}` : undefined });
-      pre.createEl("code", { cls: lang ? `language-${lang}` : undefined, text: code });
+      const codeEl = pre.createEl("code", { cls: lang ? `language-${lang}` : undefined, text: code });
+      void highlightCodeElement(code, lang, codeEl);
+      const copy = pre.createEl("button", { cls: "copy-code-button", text: "Kopieren" });
+      copy.addEventListener("click", (evt) => {
+        evt.preventDefault();
+        evt.stopPropagation();
+        copyCode(code, copy, "Kopieren");
+      });
       return;
     }
 

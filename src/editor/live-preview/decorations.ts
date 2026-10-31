@@ -14,6 +14,7 @@ import {
   BulletWidget,
   CheckboxWidget,
   CalloutWidget,
+  CodeFlairWidget,
   EmbedWidget,
   followLink,
   HrWidget,
@@ -134,7 +135,12 @@ class Builder {
           this.add(from, from, lineClass(`HyperMD-codeblock${edge}`));
         });
         if (!this.revealed(n.from, n.to)) {
-          this.hide(first.from, first.to);
+          // Statt der Zaunzeile: Sprache und Kopieren-Knopf (Obsidians `.code-block-flair`).
+          const info = n.node.getChild("CodeInfo");
+          const lang = info ? state.sliceDoc(info.from, info.to).trim().split(/\s/)[0] : "";
+          const code = n.node.getChildren("CodeText").map((c) => state.sliceDoc(c.from, c.to)).join("");
+          if (this.live) this.add(first.from, first.to, Decoration.replace({ widget: new CodeFlairWidget(lang, code) }));
+          else this.hide(first.from, first.to);
           if (last.number !== first.number && /^\s*(```|~~~)/.test(last.text)) this.hide(last.from, last.to);
         }
         return false;
