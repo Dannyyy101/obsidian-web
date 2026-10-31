@@ -1,3 +1,14 @@
+import * as autocomplete from "@codemirror/autocomplete";
+import * as commands from "@codemirror/commands";
+import * as language from "@codemirror/language";
+import * as lint from "@codemirror/lint";
+import * as search from "@codemirror/search";
+import * as state from "@codemirror/state";
+import * as view from "@codemirror/view";
+import * as lezerCommon from "@lezer/common";
+import * as lezerHighlight from "@lezer/highlight";
+import * as lezerLr from "@lezer/lr";
+import i18next from "i18next";
 import moment from "moment";
 import type { App } from "../app/app";
 import { Notice } from "../ui/notice";
@@ -8,8 +19,26 @@ import type { Plugin, PluginManifest } from "./plugin";
 const BUNDLED_PLUGINS = ["remotely-save"];
 const PLUGIN_FILES = ["manifest.json", "main.js", "styles.css"];
 
+/**
+ * Module, die Obsidian Plugins per `require` bereitstellt. CodeMirror und Lezer müssen dieselben
+ * Instanzen wie im Editor sein, sonst erkennt CodeMirror die Erweiterungen der Plugins nicht.
+ */
+const MODULES: Record<string, unknown> = {
+  obsidian,
+  "@codemirror/autocomplete": autocomplete,
+  "@codemirror/commands": commands,
+  "@codemirror/language": language,
+  "@codemirror/lint": lint,
+  "@codemirror/search": search,
+  "@codemirror/state": state,
+  "@codemirror/view": view,
+  "@lezer/common": lezerCommon,
+  "@lezer/highlight": lezerHighlight,
+  "@lezer/lr": lezerLr,
+};
+
 function requireShim(name: string): unknown {
-  if (name === "obsidian") return obsidian;
+  if (name in MODULES) return MODULES[name];
   throw new Error(`Cannot find module '${name}'`);
 }
 
@@ -19,8 +48,9 @@ export class PluginManager {
   manifests: Record<string, PluginManifest> = {};
 
   constructor(private app: App) {
-    // Globals, die Obsidian für Plugins bereitstellt.
-    Object.assign(window, { app, moment });
+    // Globals, die Obsidian für Plugins bereitstellt. Die Sprache steht wie in Obsidian im localStorage.
+    if (!i18next.isInitialized) void i18next.init({ lng: localStorage.getItem("language") || "en", fallbackLng: "en", initAsync: false });
+    Object.assign(window, { app, moment, i18next });
   }
 
   private get pluginsDir() {

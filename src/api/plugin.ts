@@ -1,7 +1,8 @@
+import type { Extension } from "@codemirror/state";
 import type { App } from "../app/app";
 import type { Command } from "../core/commands";
 import { Component } from "../core/component";
-import type { SettingTab } from "../ui/settings-modal";
+import type { SettingTab as SettingTabEntry } from "../ui/settings-modal";
 
 export interface PluginManifest {
   id: string;
@@ -67,6 +68,11 @@ export class Plugin extends Component {
     this.register(() => this.app.protocolHandlers.delete(action));
   }
 
+  /** CodeMirror-Erweiterung für alle Markdown-Editoren. Ein Array darf das Plugin später ändern und mit `workspace.updateOptions()` anwenden. */
+  registerEditorExtension(extension: Extension): void {
+    this.register(this.app.workspace.registerEditorExtension(extension));
+  }
+
   // Noch ohne Gegenstück in obsidian-web; registrieren ist erlaubt, wirkt aber (noch) nicht.
   registerView(type: string): void {
     console.warn(`[${this.manifest.id}] registerView("${type}") wird noch nicht unterstützt`);
@@ -74,7 +80,6 @@ export class Plugin extends Component {
   registerExtensions(): void {}
   registerMarkdownPostProcessor(): void {}
   registerMarkdownCodeBlockProcessor(): void {}
-  registerEditorExtension(): void {}
   registerEditorSuggest(): void {}
   registerHoverLinkSource(): void {}
 
@@ -95,25 +100,29 @@ export class Plugin extends Component {
   onExternalSettingsChange?(): unknown;
 }
 
-/** Entspricht Obsidians `PluginSettingTab`. */
-export abstract class PluginSettingTab implements SettingTab {
-  app: App;
-  plugin: Plugin;
-  containerEl: HTMLElement;
-  id: string;
-  name: string;
-
-  constructor(app: App, plugin: Plugin) {
-    this.app = app;
-    this.plugin = plugin;
-    this.id = plugin.manifest.id;
-    this.name = plugin.manifest.name;
-    this.containerEl = createDiv("vertical-tab-content");
-  }
+/** Entspricht Obsidians `SettingTab`. Plugins nutzen sie auch als bloßen Inhaltsbehälter. */
+export abstract class SettingTab {
+  app!: App;
+  containerEl: HTMLElement = createDiv("vertical-tab-content");
 
   abstract display(): void;
 
   hide(): void {
     this.containerEl.empty();
+  }
+}
+
+/** Entspricht Obsidians `PluginSettingTab`. */
+export abstract class PluginSettingTab extends SettingTab implements SettingTabEntry {
+  plugin: Plugin;
+  id: string;
+  name: string;
+
+  constructor(app: App, plugin: Plugin) {
+    super();
+    this.app = app;
+    this.plugin = plugin;
+    this.id = plugin.manifest.id;
+    this.name = plugin.manifest.name;
   }
 }

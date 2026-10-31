@@ -1,3 +1,4 @@
+import type { Extension } from "@codemirror/state";
 import type { App } from "../app/app";
 import { parseLinktext } from "../core/metadata-cache";
 import type { TAbstractFile, TFile } from "../core/vault";
@@ -40,6 +41,8 @@ export class Workspace extends Events {
   private activeFile: TFile | null = null;
   private restoring = false;
   private readyCallbacks: (() => unknown)[] = [];
+  /** Editor-Erweiterungen der Plugins; Plugins dürfen die Arrays nachträglich ändern (`updateOptions`). */
+  private editorExtensions: Extension[] = [];
   /** Ansichtstyp → Erzeuger (wie Obsidians `viewRegistry`), z. B. „graph“. */
   private viewCreators = new Map<string, (leaf: WorkspaceLeaf) => LeafView>();
 
@@ -129,6 +132,27 @@ export class Workspace extends Events {
 
   iterateEditors(fn: (editor: MarkdownEditor) => void): void {
     for (const leaf of this.leaves) fn(leaf.editor);
+  }
+
+  /** @internal Für `Plugin.registerEditorExtension`; liefert eine Funktion zum Entfernen. */
+  registerEditorExtension(extension: Extension): () => void {
+    this.editorExtensions.push(extension);
+    this.updateOptions();
+    return () => {
+      this.editorExtensions.remove(extension);
+      this.updateOptions();
+    };
+  }
+
+  /** @internal */
+  getEditorExtensions(): Extension[] {
+    // Kopie: CodeMirror soll bei jedem Neukonfigurieren den aktuellen Inhalt sehen.
+    return this.editorExtensions.map((e) => (Array.isArray(e) ? [...e] : e));
+  }
+
+  /** Wie Obsidian: wendet geänderte Editor-Erweiterungen auf alle offenen Editoren an. */
+  updateOptions(): void {
+    this.iterateEditors((editor) => editor.reconfigurePluginExtensions());
   }
 
   private createLeaf(index = this.leaves.length): WorkspaceLeaf {

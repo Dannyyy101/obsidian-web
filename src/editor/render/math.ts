@@ -15,10 +15,20 @@ export function loadKatex(): Promise<Katex> {
   return loading;
 }
 
-/** Wie Obsidian: Darstellung so nachsichtig wie möglich, Fehler als rote Quelle statt Exception. */
+/**
+ * Wie Obsidian: Darstellung so nachsichtig wie möglich, Fehler als rote Quelle statt Exception.
+ * MathJax' `\class{…}{…}` (in Obsidian verfügbar) wird zu KaTeX' `\htmlClass`; nur das ist vertraut.
+ */
 function renderInto(k: Katex, tex: string, el: HTMLElement, display: boolean) {
   try {
-    k.render(tex, el, { displayMode: display, throwOnError: false, strict: false, trust: false, output: "htmlAndMathml" });
+    k.render(tex, el, {
+      displayMode: display,
+      throwOnError: false,
+      strict: false,
+      trust: (ctx) => ctx.command === "\\htmlClass",
+      macros: { "\\class": "\\htmlClass" },
+      output: "htmlAndMathml",
+    });
   } catch (err) {
     el.setText(tex);
     el.addClass("math-error");
