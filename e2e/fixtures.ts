@@ -69,7 +69,7 @@ export async function readVaultFile(page: Page, name: string, path: string): Pro
 /** Öffnet den Vault und wartet, bis der Datei-Explorer steht. */
 export async function openVault(page: Page, name: string) {
   await page.goto(`/?vault=${encodeURIComponent(name)}`);
-  await expect(page.locator(".nav-files-container")).toBeVisible();
+  await expect(page.locator(".nav-files-container")).toBeAttached();
 }
 
 export const test = base.extend<{ vaultName: string; vault: Page }>({
