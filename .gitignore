@@ -5,3 +5,6 @@ public/bundled-plugins/
 .DS_Store
 # Secrets fürs Deployment
 deploy/.env
+# Playwright
+test-results/
+playwright-report/

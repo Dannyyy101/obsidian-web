@@ -1,0 +1,8 @@
+{
+  "id": "remotely-save",
+  "name": "Remotely Save",
+  "version": "0.0.0",
+  "minAppVersion": "0.13.21",
+  "description": "Platzhalter: verhindert, dass obsidian-web das mitgelieferte Plugin in E2E-Tests installiert und aktiviert.",
+  "author": "obsidian-web"
+}

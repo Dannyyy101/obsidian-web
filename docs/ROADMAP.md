@@ -1,6 +1,6 @@
 # obsidian-web – Roadmap
 
-Stand: 2026-10-31 · Grundlage: Code im Repository (Typecheck grün, 91 automatisierte Tests grün)
+Stand: 2026-10-31 · Grundlage: Code im Repository (Typecheck grün, 91 Unit-Tests und 14 E2E-Tests in Chromium, Firefox und WebKit grün)
 
 Ziel ist eine vollständige Abbildung von Obsidian im Browser (siehe `docs/KONZEPT.md`). Diese Datei
 zeigt, was davon umgesetzt ist, was nur teilweise geht und was fehlt, und schlägt eine Reihenfolge
@@ -9,8 +9,10 @@ für den Rest vor.
 **Legende:** ✅ umgesetzt · 🟡 teilweise · ⬜ fehlt · 🚫 bewusst nicht geplant
 
 > **Hinweis zur Prüfung:** „Umgesetzt“ heißt: durch automatisierte Tests abgedeckt (Vitest,
-> happy-dom). Im echten Browser wurden bisher nur Sync, Live Preview und Darstellung stichprobenartig
-> angesehen. Eine manuelle Abnahme aller Features und E2E-Tests (Playwright) stehen noch aus.
+> happy-dom). Die Kernabläufe (Vault anlegen und öffnen, Speichern, Umbenennen mit Link-Update,
+> Live Preview, Lesemodus, Schnellwechsler, Befehlspalette, Suche, Backlinks, Tabs, remotely-save
+> laden) prüfen zusätzlich E2E-Tests mit Playwright in Chromium, Firefox und WebKit (`e2e/`). Eine
+> manuelle Abnahme aller Features steht noch aus.
 
 ---
 
@@ -158,10 +160,10 @@ für den Rest vor.
 | Feature | Status |
 |---|---|
 | ESLint mit Schichtgrenzen (laut Konzept) | ⬜ |
-| CI (Typecheck, Tests, Build bei jedem Push) | ⬜ |
-| E2E-Tests mit Playwright gegen einen echten Browser | ⬜ |
+| CI (Typecheck, Tests, Build und E2E-Tests bei jedem Push) | ✅ |
+| E2E-Tests mit Playwright gegen einen echten Browser | 🟡 Kernabläufe abgedeckt; Graph, Einstellungen, Embeds, Kontextmenüs und Sync fehlen |
 | Manuelle Abnahme aller umgesetzten Features in Chrome, Firefox und Safari | ⬜ |
-| Fixture-Vault aus Obsidian Desktop für Kompatibilitätstests | ⬜ |
+| Fixture-Vault aus Obsidian Desktop für Kompatibilitätstests | ⬜ `e2e/fixtures/vault/` ist von Hand geschrieben |
 
 ### Bewusst nicht geplant
 
@@ -178,7 +180,7 @@ Die Reihenfolge richtet sich nach dem Nutzen im Alltag. Jede Stufe ist für sich
 
 | Stufe | Inhalt | Warum jetzt |
 |---|---|---|
-| **A – Abnahme** | E2E-Tests mit Playwright, CI, manuelle Prüfung in drei Browsern | Viele Features sind nur automatisiert getestet. Fehler im echten Browser sollten auffallen, bevor mehr darauf aufbaut. |
+| **A – Abnahme** | ~~CI~~, ~~E2E-Grundgerüst mit Kernabläufen~~, weitere E2E-Tests, manuelle Prüfung in drei Browsern | Viele Features sind nur automatisiert getestet. Fehler im echten Browser sollten auffallen, bevor mehr darauf aufbaut. Die ersten E2E-Tests haben bereits zwei Fehler gefunden (Firefox-Start, Inline-Titel). |
 | **B – Schreiben** | Listen fortsetzen, `[[`-Autovervollständigung, Bilder einfügen, Code-Highlighting, Formatierungsbefehle, Wortzählung | Betrifft jede Minute im Editor. |
 | **C – Organisieren** | Properties, Tags, Lesezeichen, Tagesnotizen, Vorlagen, Drag & Drop im Explorer, Seitenvorschau | Die meistgenutzten Core-Plugins nach Suche und Backlinks. |
 | **D – Anpassen** | Themes und Snippets, `hotkeys.json`, Plugin-Verwaltung, Plugin-API (Views, Editor, Post-Processor) | Öffnet den Weg für Community-Plugins. |
