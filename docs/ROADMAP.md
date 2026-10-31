@@ -117,7 +117,7 @@ für den Rest vor.
 | Listen beim Enter fortsetzen, Einrücken/Ausrücken von Listen | ✅ `useTab`, `tabSize`, `smartIndentList` aus `app.json`; beim Einrücken wird eine nummerierte Liste noch nicht neu bei 1 begonnen |
 | Autovervollständigung für `[[Links]]` und `#Tags` | ✅ Dateien, Aliasse, `#Überschrift`, `#^Block`; noch ohne `[[##` (vaultweit), nicht verlinkte Ziele und Tags im Frontmatter |
 | Klammern und Markdown-Zeichen automatisch schließen | ✅ `autoPairBrackets`, `autoPairMarkdown` aus `app.json` |
-| Bilder einfügen/ablegen (Ablage nach `attachmentFolderPath`) | ⬜ |
+| Bilder einfügen/ablegen (Ablage nach `attachmentFolderPath`) | ✅ Auch andere Dateien per Drag & Drop; `useMarkdownLinks` wird beachtet |
 | Syntax-Highlighting in Codeblöcken, Kopieren-Knopf | ⬜ |
 | Überschriften und Listen einklappen | ⬜ |
 | Suchen & Ersetzen in der Notiz (eigene Oberfläche) | ⬜ |

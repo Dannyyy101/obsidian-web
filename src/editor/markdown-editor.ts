@@ -11,6 +11,7 @@ import { obsidianLezerExtensions } from "../markdown/syntax";
 import { setIcon } from "../ui/icons";
 import { Notice } from "../ui/notice";
 import { join } from "../shared/path";
+import { attachmentHandling } from "./attachments";
 import { autoPair } from "./auto-pair";
 import { Editor } from "./editor";
 import { editorInfoField, editorLivePreviewField, livePreviewState, setLivePreview } from "./fields";
@@ -211,6 +212,7 @@ export class MarkdownEditor {
       extensions: [
         history(),
         editorSuggest([new LinkSuggest(this.app), new TagSuggest(this.app)], () => this.file),
+        attachmentHandling(this.app, () => this.file),
         drawSelection(),
         dropCursor(),
         highlightSelectionMatches(),

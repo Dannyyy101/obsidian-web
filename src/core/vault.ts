@@ -229,6 +229,14 @@ export class Vault extends Events {
     return this.getFileByPath(p)!;
   }
 
+  /** Obsidians `getAvailablePath`: `pfad.ext`, bei Kollision `pfad 1.ext`, `pfad 2.ext` … */
+  getAvailablePath(path: string, extension: string): string {
+    const withExt = (p: string) => (extension ? `${p}.${extension}` : p);
+    let candidate = withExt(path);
+    for (let i = 1; this.getAbstractFileByPath(candidate); i++) candidate = withExt(`${path} ${i}`);
+    return candidate;
+  }
+
   private assertNew(path: string): string {
     const p = normalizePath(path);
     if (this.getAbstractFileByPath(p)) throw new Error("File already exists.");
