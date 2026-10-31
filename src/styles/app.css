@@ -2397,4 +2397,42 @@ body {
 .markdown-source-view .cm-vim-panel input {
   font: inherit;
   color: var(--text-normal);
+/* Fußnoten: Verweise hochgestellt, Liste am Ende des Lesemodus. */
+.footnote-ref {
+  font-size: 0.75em;
+  line-height: 0;
+  vertical-align: super;
+}
+
+.footnote-ref a,
+.footnote-backref,
+.cm-footref {
+  color: var(--text-accent);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.cm-inline-footnote {
+  font-size: 0.8em;
+  color: var(--text-muted);
+  vertical-align: super;
+}
+
+.cm-line.HyperMD-footnote {
+  font-size: var(--font-smaller);
+  color: var(--text-muted);
+}
+
+.markdown-rendered section.footnotes {
+  margin-top: 2em;
+  font-size: var(--font-smaller);
+  color: var(--text-muted);
+}
+
+.markdown-rendered .footnotes-sep {
+  margin: 1em 0;
+}
+
+.markdown-rendered .footnotes-list p {
+  margin: 0.25em 0;
 }

@@ -113,6 +113,26 @@ export class CodeFlairWidget extends WidgetType {
   }
 }
 
+/** `[^label]` als hochgestellter Verweis; der Tooltip zeigt die Definition. */
+export class FootnoteRefWidget extends WidgetType {
+  constructor(
+    private label: string,
+    private definition: string,
+  ) {
+    super();
+  }
+
+  eq(other: FootnoteRefWidget) {
+    return other.label === this.label && other.definition === this.definition;
+  }
+
+  toDOM() {
+    const sup = createEl("sup", { cls: "footnote-ref cm-footref", text: `[${this.label}]` });
+    if (this.definition) sup.setAttr("title", this.definition);
+    return sup;
+  }
+}
+
 export class HrWidget extends WidgetType {
   eq() {
     return true;

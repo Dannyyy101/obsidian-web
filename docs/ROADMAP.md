@@ -124,7 +124,7 @@ für den Rest vor.
 | Kontextmenü im Editor, Formatierungsbefehle (fett, Link …) | ✅ Befehls-IDs wie Obsidian (`editor:toggle-bold` …), Kürzel Cmd/Strg+B, I, K, /, Enter; Untermenüs (`MenuItem.setSubmenu`), Event `editor-menu` |
 | Vim-Modus | ✅ `vimMode` aus `app.json` über `@replit/codemirror-vim`; `:w`, `:q`, `:wq`. Ohne `.obsidian.vimrc` |
 | Tabellen-Editor in der Live Preview | ✅ Zellen direkt bearbeiten, Tab/Enter/Pfeile, „+“ für Zeile/Spalte, Kontextmenü (einfügen, löschen, ausrichten); ändert beim Tippen nur die Zelle in der Quelle |
-| Fußnoten rendern | ⬜ |
+| Fußnoten rendern | ✅ `[^1]`, `[^1]: …` (mit eingerückten Folgezeilen), `^[inline]`; Lesemodus mit nummerierter Liste, Live Preview mit Tooltip; `CachedMetadata.footnotes` |
 
 ### Organisieren
 

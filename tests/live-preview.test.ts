@@ -90,6 +90,18 @@ describe("Live Preview", () => {
     expect(cell.innerHTML).toBe("<strong>neu</strong> | z");
   });
 
+  it("Fußnoten: Verweis hochgestellt mit Definition als Tooltip, Inline-Fußnote ohne Klammern", () => {
+    const doc = "Text[^1] und ^[nebenbei].\n\n[^1]: Die Quelle";
+    const view = editor(doc, doc.length);
+    const ref = view.contentDOM.querySelector<HTMLElement>("sup.footnote-ref")!;
+    expect(ref.textContent).toBe("[1]");
+    expect(ref.title).toBe("Die Quelle");
+    expect(lineText(view, 1)).toBe("Text[1] und nebenbei.");
+    expect(view.contentDOM.querySelector(".HyperMD-footnote .cm-footref")?.textContent).toBe("[^1]:");
+    const inside = editor(doc, doc.indexOf("[^1]") + 1);
+    expect(lineText(inside, 1)).toBe("Text[^1] und nebenbei.");
+  });
+
   describe("LaTeX", () => {
     beforeAll(async () => {
       // KaTeX rendert nicht im Quirks-Modus; die App hat einen Doctype, happy-dom meldet ihn nicht.

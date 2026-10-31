@@ -4,6 +4,7 @@ import { followLink } from "../live-preview/widgets";
 import { parseCallout, renderCalloutShell } from "./callout";
 import type { RenderContext } from "./context";
 import { copyCode, highlightCodeElement } from "./code";
+import { FootnoteState, followFootnoteLink, renderFootnoteSection } from "./footnotes";
 import { renderInline, renderInlineChildren } from "./inline";
 import { mathSource, renderMath } from "./math";
 import { renderMermaid } from "./mermaid";
@@ -16,13 +17,20 @@ import { renderTable } from "./table";
  */
 export function renderMarkdown(source: string, el: HTMLElement, ctx: RenderContext): void {
   const tree = obsidianMarkdownParser.parse(source);
+  // Fußnoten gehören zum Dokument: Callouts rendern mit dem Zustand ihres Dokuments weiter.
+  const footnotes = ctx.footnotes ? null : new FootnoteState(source, tree);
+  if (footnotes) ctx = { ...ctx, footnotes };
   renderBlocks(source, tree.topNode, el, ctx);
+  if (footnotes) renderFootnoteSection(el, footnotes, ctx, (text, parent, c) => renderInline(text, parent, c));
   if (ctx.depth === 0) attachLinkHandler(el, ctx);
 }
 
 function attachLinkHandler(el: HTMLElement, ctx: RenderContext) {
   el.addEventListener("click", (evt) => {
-    const link = (evt.target as HTMLElement).closest<HTMLElement>("a.internal-link, a.external-link");
+    const target = evt.target as HTMLElement;
+    const footnote = target.closest<HTMLElement>("a.footnote-link");
+    if (footnote && el.contains(footnote)) return followFootnoteLink(footnote, el, evt);
+    const link = target.closest<HTMLElement>("a.internal-link, a.external-link");
     if (link && el.contains(link) && evt.button === 0) followLink(link, ctx.host, evt);
   });
 }
@@ -114,6 +122,7 @@ function renderBlock(text: string, node: SyntaxNode, el: HTMLElement, ctx: Rende
       return;
 
     case "Frontmatter":
+    case "FootnoteDefinition":
     case "LinkReference":
     case "CommentBlock":
       return;
