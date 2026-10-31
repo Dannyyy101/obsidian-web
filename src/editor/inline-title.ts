@@ -32,6 +32,10 @@ class InlineTitleWidget extends WidgetType {
       } else if (evt.key === "Escape") {
         reset();
         el.blur();
+      } else if ((evt.metaKey || evt.ctrlKey) && !evt.altKey && evt.key.toLowerCase() === "a") {
+        // Sonst markiert der Browser den ganzen Editor, und die Eingabe landet in der Notiz.
+        evt.preventDefault();
+        getSelection()?.selectAllChildren(el);
       }
     });
     el.addEventListener("paste", (evt) => {

@@ -67,6 +67,7 @@ Das ausführliche Konzept steht in `docs/KONZEPT.md`. Lies es, bevor du größer
 | `server/cors-proxy.ts` | Vite-Middleware `/__proxy`: Ersatz für Electrons CORS-freies `requestUrl` |
 | `scripts/fetch-plugins.mjs` | Lädt mitgelieferte Plugins (remotely-save) nach `public/bundled-plugins/` |
 | `tests/fixtures/vault/` | Referenz-Vault, mit Obsidian Desktop erstellt |
+| `e2e/` | Playwright-Tests (`*.e2e.ts`) in Chromium, Firefox, WebKit; Helfer in `e2e/fixtures.ts`, Fixture-Vault in `e2e/fixtures/vault/` |
 | `tests/fixtures/syntax/` | Syntax-Korpus: `name.md` + `name.html` + `name.cache.json` |
 
 ## Häufige Aufgaben
@@ -143,13 +144,23 @@ speichert z. B. NFD. Die ursprüngliche Schreibweise stellt `scan` aus dem Times
 pnpm install         # lädt per postinstall auch die mitgelieferten Plugins
 pnpm dev             # Dev-Server inkl. CORS-Proxy (http://localhost:5173)
 pnpm test            # Vitest: Unit-Tests + remotely-save-Integrationstest
+pnpm test:e2e        # Playwright: E2E-Tests in Chromium, Firefox, WebKit (startet den Dev-Server selbst)
 pnpm typecheck       # tsc --noEmit
 pnpm build           # Typecheck + Produktions-Build
 pnpm fetch-plugins   # Plugins neu laden (--force überschreibt)
 ```
 
-Führe vor dem Abschluss einer Aufgabe `pnpm typecheck && pnpm test` aus. Geplant, aber noch nicht
-eingerichtet: `pnpm lint` (ESLint mit Schichtgrenzen) und `pnpm test:e2e` (Playwright).
+Führe vor dem Abschluss einer Aufgabe `pnpm typecheck && pnpm test` aus, bei Änderungen an der
+Oberfläche auch `pnpm test:e2e`. Geplant, aber noch nicht eingerichtet: `pnpm lint` (ESLint mit
+Schichtgrenzen).
+
+### E2E-Test schreiben
+
+Nutze `test` aus `e2e/fixtures.ts`: Die Fixture `vault` liefert eine Seite mit geöffnetem
+Fixture-Vault, `vaultName` dessen Namen (für `readVaultFile`). Jeder Test hat einen eigenen
+Vault-Namen, weil WebKit das OPFS zwischen allen Profilen teilt. Warte nach dem Öffnen einer Datei
+mit `expectOpen`, sonst prüft der Test den Editor, bevor die Datei geladen ist. Der Fixture-Vault
+enthält ein Platzhalter-Manifest für remotely-save, damit dessen Willkommensdialog nicht stört.
 
 ### Neue Seitenleisten-Ansicht
 
