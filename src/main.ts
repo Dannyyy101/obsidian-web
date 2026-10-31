@@ -13,8 +13,9 @@ import "./styles/app.css";
 
 async function openVault(name: string, root: HTMLElement) {
   document.title = `${name} – obsidian-web`;
-  // Ohne persistenten Speicher darf der Browser den Vault bei Platzmangel löschen.
-  await navigator.storage.persist?.();
+  // Ohne persistenten Speicher darf der Browser den Vault bei Platzmangel löschen. Nicht abwarten:
+  // Firefox fragt per Dialog nach und löst das Promise erst nach der Antwort auf.
+  void navigator.storage.persist?.().catch(() => false);
 
   const adapter = new IndexedAdapter(name, await OpfsBackend.open(name), new IdbTimesStore(name));
   const vault = new Vault(adapter);
