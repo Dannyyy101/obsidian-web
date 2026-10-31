@@ -17,6 +17,7 @@ import { OutgoingLinksView } from "../ui/views/outgoing-links-view";
 import { OutlineView } from "../ui/views/outline-view";
 import { SearchView } from "../ui/views/search-view";
 import { FileExplorer } from "../ui/file-explorer";
+import { Keymap } from "../ui/keymap";
 import { Notice } from "../ui/notice";
 import { SettingsModal } from "../ui/settings-modal";
 import { coreSettingTabs } from "./core-settings";
@@ -27,6 +28,9 @@ export class App {
   vault: Vault;
   workspace: Workspace;
   commands = new Commands();
+  keymap = new Keymap();
+  /** Wie Obsidians `app.dom`: wichtige Container der Oberfläche. */
+  dom: { appContainerEl: HTMLElement };
   fileManager: FileManager;
   metadataCache: MetadataCache;
   setting: SettingsModal;
@@ -48,6 +52,7 @@ export class App {
     this.metadataCache = new MetadataCache(vault, options.metadataParser, options.metadataStore);
     this.fileManager = new FileManager(vault, this.metadataCache);
     this.workspace = new Workspace(this, containerEl);
+    this.dom = { appContainerEl: this.workspace.containerEl };
     this.setting = new SettingsModal(this);
     for (const tab of coreSettingTabs(this)) this.setting.addCoreSettingTab(tab);
     this.plugins = new PluginManager(this);

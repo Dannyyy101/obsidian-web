@@ -29,6 +29,9 @@ declare global {
     createDiv(o?: DomElementInfo | string, callback?: ElCallback<HTMLDivElement>): HTMLDivElement;
     createSpan(o?: DomElementInfo | string, callback?: ElCallback<HTMLSpanElement>): HTMLSpanElement;
     appendText(text: string): void;
+    /** Dokument bzw. Fenster, zu dem der Knoten gehört (Obsidian unterstützt mehrere Fenster). */
+    readonly doc: Document;
+    readonly win: Window;
   }
   interface Element {
     addClass(...classes: string[]): void;
@@ -112,6 +115,10 @@ export function installDomExtensions() {
   node.appendText = function (text) {
     this.appendChild(document.createTextNode(text));
   };
+  Object.defineProperties(node, {
+    doc: { configurable: true, get: function (this: Node) { return this.ownerDocument ?? document; } },
+    win: { configurable: true, get: function (this: Node) { return (this.ownerDocument ?? document).defaultView ?? window; } },
+  });
 
   const el = Element.prototype;
   el.addClass = function (...classes) {

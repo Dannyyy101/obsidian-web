@@ -20,6 +20,9 @@ importers:
       '@codemirror/language':
         specifier: ^6.13.1
         version: 6.13.1
+      '@codemirror/lint':
+        specifier: ^6.9.7
+        version: 6.9.7
       '@codemirror/search':
         specifier: ^6.7.2
         version: 6.7.2
@@ -35,12 +38,18 @@ importers:
       '@lezer/highlight':
         specifier: ^1.2.5
         version: 1.2.5
+      '@lezer/lr':
+        specifier: ^1.4.12
+        version: 1.4.12
       '@lezer/markdown':
         specifier: ^1.8.1
         version: 1.8.1
       codemirror:
         specifier: ^6.0.2
         version: 6.0.2
+      i18next:
+        specifier: ^26.5.12
+        version: 26.5.12(typescript@7.0.2)
       katex:
         specifier: ^0.19.1
         version: 0.19.1
@@ -789,6 +798,14 @@ packages:
   happy-dom@21.0.4:
     resolution: {integrity: sha512-tFm+GaLBgo6o0awHnvHaNoraVo27qJ+2tZEtZ+cIa08hXbeitrxAJajLI05hsUy/2/YTKcUjQYzHe5mCcraLBw==}
     engines: {node: '>=20.0.0'}
+
+  i18next@26.5.12:
+    resolution: {integrity: sha512-vTt8tc3y5axoU7wwTYg8vjpILLyP33a5GyGJAVI7FDRx1XueYxZVIkcVeStoftrVnAM/o28hKvK0sslucDI9aQ==}
+    peerDependencies:
+      typescript: ^5 || ^6 || ^7
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   iconv-lite@0.6.3:
     resolution: {integrity: sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==}
@@ -1861,6 +1878,10 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+
+  i18next@26.5.12(typescript@7.0.2):
+    optionalDependencies:
+      typescript: 7.0.2
 
   iconv-lite@0.6.3:
     dependencies:

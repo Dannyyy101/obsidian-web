@@ -5,8 +5,11 @@
 import { mkdir, writeFile, access } from "node:fs/promises";
 import { join } from "node:path";
 
+// remotely-save installiert obsidian-web in jeden Vault (BUNDLED_PLUGINS im PluginManager), die
+// übrigen dienen den Integrationstests (tests/<id>.test.ts).
 const PLUGINS = [
   { id: "remotely-save", repo: "remotely-save/remotely-save", version: "0.5.25" },
+  { id: "obsidian-latex-suite", repo: "artisticat1/obsidian-latex-suite", version: "1.14.1" },
 ];
 const FILES = ["main.js", "manifest.json", "styles.css"];
 const force = process.argv.includes("--force");

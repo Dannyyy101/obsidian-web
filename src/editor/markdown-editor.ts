@@ -12,6 +12,7 @@ import { setIcon } from "../ui/icons";
 import { Notice } from "../ui/notice";
 import { join } from "../shared/path";
 import { autoPair } from "./auto-pair";
+import { editorInfoField, editorLivePreviewField, livePreviewState, setLivePreview } from "./fields";
 import { inlineTitle } from "./inline-title";
 import { listEditing } from "./lists";
 import { editorSuggest } from "./suggest/editor-suggest";
@@ -67,6 +68,8 @@ export class MarkdownEditor {
   private applyingExternal = false;
   private mode = new Compartment();
   private title = new Compartment();
+  /** Editor-Erweiterungen der Plugins (`registerEditorExtension`). */
+  private pluginExtensions = new Compartment();
   private host: LivePreviewHost;
   private imageUrls = new Map<string, { mtime: number; url: string }>();
 
@@ -185,8 +188,15 @@ export class MarkdownEditor {
 
   /** Live Preview/Quellmodus neu anwenden (nach Änderung von `livePreview`, auch in anderen Tabs). */
   reconfigureMode(): void {
-    this.view.dispatch({ effects: this.mode.reconfigure(this.modeExtension()) });
+    this.view.dispatch({
+      effects: [this.mode.reconfigure(this.modeExtension()), setLivePreview.of(this.isLivePreview())],
+    });
     this.updateModeButton();
+  }
+
+  /** Plugin-Erweiterungen neu einlesen (entspricht Obsidians `workspace.updateOptions`). */
+  reconfigurePluginExtensions(): void {
+    this.view.dispatch({ effects: this.pluginExtensions.reconfigure(this.app.workspace.getEditorExtensions()) });
   }
 
   private createState(doc: string): EditorState {
@@ -212,6 +222,10 @@ export class MarkdownEditor {
         syntaxHighlighting(obsidianHighlight),
         this.mode.of(this.modeExtension()),
         this.title.of(this.titleExtension()),
+        editorInfoField.init(() => ({ app: this.app, file: this.file })),
+        editorLivePreviewField.init(() => this.isLivePreview()),
+        livePreviewState,
+        this.pluginExtensions.of(this.app.workspace.getEditorExtensions()),
         EditorView.lineWrapping,
         EditorView.contentAttributes.of({ spellcheck: "true" }),
         EditorView.updateListener.of((update) => {

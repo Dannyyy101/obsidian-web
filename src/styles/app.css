@@ -84,6 +84,7 @@ body.theme-dark {
   --background-secondary: #262626;
   --background-secondary-alt: #1b1b1b;
   --background-modifier-border: #363636;
+  --background-modifier-border-hover: #4a4a4a;
   --background-modifier-hover: rgba(255, 255, 255, 0.075);
   --background-modifier-active-hover: rgba(138, 92, 245, 0.2);
   --background-modifier-form-field: #2b2b2b;
@@ -102,6 +103,7 @@ body.theme-light {
   --background-secondary: #f6f6f6;
   --background-secondary-alt: #fcfcfc;
   --background-modifier-border: #e0e0e0;
+  --background-modifier-border-hover: #d0d0d0;
   --background-modifier-hover: rgba(0, 0, 0, 0.06);
   --background-modifier-active-hover: rgba(138, 92, 245, 0.15);
   --background-modifier-form-field: #ffffff;
