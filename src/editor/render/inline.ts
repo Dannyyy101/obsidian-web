@@ -3,6 +3,7 @@ import { obsidianMarkdownParser } from "../../markdown/syntax";
 import { isExternalUrl, splitWikilink, wikilinkDisplay } from "../live-preview/host";
 import type { RenderContext } from "./context";
 import { renderEmbed } from "./embed";
+import { renderFootnoteRef } from "./footnotes";
 import { mathSource, renderMath } from "./math";
 
 const TAGS: Record<string, keyof HTMLElementTagNameMap> = {
@@ -125,6 +126,20 @@ function renderNode(text: string, node: SyntaxNode, parent: HTMLElement, ctx?: R
     case "Tag":
       parent.createEl("a", { cls: "tag", text: source, attr: { href: source } });
       return;
+    case "FootnoteReference": {
+      const footnotes = ctx?.footnotes;
+      const n = footnotes?.reference(source.slice(2, -1)) ?? null;
+      // Ohne Definition bleibt der Verweis Text, wie in Obsidian.
+      if (!footnotes || n === null) parent.appendText(source);
+      else renderFootnoteRef(parent, n, footnotes);
+      return;
+    }
+    case "InlineFootnote": {
+      const footnotes = ctx?.footnotes;
+      if (footnotes) renderFootnoteRef(parent, footnotes.inline(source.slice(2, -1)), footnotes);
+      else parent.createEl("sup", { cls: "footnote-ref", text: "*", attr: { "aria-label": source.slice(2, -1) } });
+      return;
+    }
     case "InlineMath": {
       const { tex, display } = mathSource(source);
       parent.appendChild(renderMath(tex, display));

@@ -14,15 +14,17 @@ import {
   BulletWidget,
   CheckboxWidget,
   CalloutWidget,
+  CodeFlairWidget,
   EmbedWidget,
+  FootnoteRefWidget,
   followLink,
   HrWidget,
   ImageWidget,
   LinkWidget,
   MathWidget,
   MermaidWidget,
-  TableWidget,
 } from "./widgets";
+import { TableEditorWidget } from "./table-editor";
 import { mathSource } from "../render/math";
 
 const hidden = Decoration.replace({});
@@ -59,6 +61,19 @@ class Builder {
       const last = state.doc.lineAt(r.to).number;
       for (let n = first; n <= last; n++) this.activeLines.add(n);
     }
+  }
+
+  private footnotes: Map<string, string> | null = null;
+
+  /** Text der Definition `[^label]: …` für den Tooltip, einmal pro Durchlauf gesucht. */
+  private footnoteDefinition(label: string): string {
+    if (!this.footnotes) {
+      this.footnotes = new Map();
+      for (const m of this.state.doc.toString().matchAll(/^[ \t>]*\[\^([^\]\s]+)\]:[ \t]?(.*)$/gm)) {
+        if (!this.footnotes.has(m[1])) this.footnotes.set(m[1], m[2]);
+      }
+    }
+    return this.footnotes.get(label) ?? "";
   }
 
   private add(from: number, to: number, deco: Decoration) {
@@ -134,7 +149,12 @@ class Builder {
           this.add(from, from, lineClass(`HyperMD-codeblock${edge}`));
         });
         if (!this.revealed(n.from, n.to)) {
-          this.hide(first.from, first.to);
+          // Statt der Zaunzeile: Sprache und Kopieren-Knopf (Obsidians `.code-block-flair`).
+          const info = n.node.getChild("CodeInfo");
+          const lang = info ? state.sliceDoc(info.from, info.to).trim().split(/\s/)[0] : "";
+          const code = n.node.getChildren("CodeText").map((c) => state.sliceDoc(c.from, c.to)).join("");
+          if (this.live) this.add(first.from, first.to, Decoration.replace({ widget: new CodeFlairWidget(lang, code) }));
+          else this.hide(first.from, first.to);
           if (last.number !== first.number && /^\s*(```|~~~)/.test(last.text)) this.hide(last.from, last.to);
         }
         return false;
@@ -268,6 +288,29 @@ class Builder {
         this.add(n.from, n.to, markClass("cm-comment"));
         return false;
 
+      case "FootnoteReference": {
+        const label = state.sliceDoc(n.from + 2, n.to - 1);
+        if (this.revealed(n.from, n.to)) this.add(n.from, n.to, markClass("cm-footref"));
+        else this.add(n.from, n.to, Decoration.replace({ widget: new FootnoteRefWidget(label, this.footnoteDefinition(label)) }));
+        return false;
+      }
+
+      case "InlineFootnote":
+        // Inhalt bleibt sichtbar (klein, hochgestellt), nur `^[` und `]` verschwinden.
+        this.add(n.from, n.to, markClass("cm-inline-footnote"));
+        if (!this.revealed(n.from, n.to)) {
+          this.hide(n.from, n.from + 2);
+          this.hide(n.to - 1, n.to);
+        }
+        return;
+
+      case "FootnoteDefinition": {
+        this.eachLine(n.from, n.to, (from) => this.add(from, from, lineClass("HyperMD-footnote")));
+        const marks = n.node.getChildren("FootnoteMark");
+        if (marks.length >= 2) this.add(n.from, marks[1].to, markClass("cm-footref"));
+        return;
+      }
+
       case "Table":
         // Gerendert vom blockWidgetField; hier nur die Quelle als Tabelle kennzeichnen.
         this.eachLine(n.from, n.to, (from) => this.add(from, from, lineClass("HyperMD-table-row")));
@@ -335,7 +378,7 @@ function blockWidgetFor(state: EditorState, node: SyntaxNode, host: LivePreviewH
   const source = () => state.sliceDoc(state.doc.lineAt(node.from).from, state.doc.lineAt(node.to).to);
   switch (node.name) {
     case "Table":
-      return new TableWidget(source(), host);
+      return new TableEditorWidget(source(), host);
     case "BlockMath":
       return new MathWidget(mathSource(state.sliceDoc(node.from, node.to)).tex, true);
     case "Blockquote": {

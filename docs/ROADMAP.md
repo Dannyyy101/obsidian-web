@@ -117,14 +117,14 @@ für den Rest vor.
 | Listen beim Enter fortsetzen, Einrücken/Ausrücken von Listen | ✅ `useTab`, `tabSize`, `smartIndentList` aus `app.json`; beim Einrücken wird eine nummerierte Liste noch nicht neu bei 1 begonnen |
 | Autovervollständigung für `[[Links]]` und `#Tags` | ✅ Dateien, Aliasse, `#Überschrift`, `#^Block`; noch ohne `[[##` (vaultweit), nicht verlinkte Ziele und Tags im Frontmatter |
 | Klammern und Markdown-Zeichen automatisch schließen | ✅ `autoPairBrackets`, `autoPairMarkdown` aus `app.json` |
-| Bilder einfügen/ablegen (Ablage nach `attachmentFolderPath`) | ⬜ |
-| Syntax-Highlighting in Codeblöcken, Kopieren-Knopf | ⬜ |
-| Überschriften und Listen einklappen | ⬜ |
-| Suchen & Ersetzen in der Notiz (eigene Oberfläche) | ⬜ |
-| Kontextmenü im Editor, Formatierungsbefehle (fett, Link …) | ⬜ |
-| Vim-Modus | ⬜ |
-| Tabellen-Editor in der Live Preview | ⬜ |
-| Fußnoten rendern | ⬜ |
+| Bilder einfügen/ablegen (Ablage nach `attachmentFolderPath`) | ✅ Auch andere Dateien per Drag & Drop; `useMarkdownLinks` wird beachtet |
+| Syntax-Highlighting in Codeblöcken, Kopieren-Knopf | ✅ Sprachen aus `@codemirror/language-data`, im Lesemodus mit Prism-Klassen (`.token.keyword`) |
+| Überschriften und Listen einklappen | ✅ `foldHeading`, `foldIndent`; Zustand pro Datei im `localStorage`; Befehle `editor:toggle-fold`, `editor:fold-all`, `editor:unfold-all`. Im Lesemodus noch nicht |
+| Suchen & Ersetzen in der Notiz (eigene Oberfläche) | ✅ Cmd/Strg+F, Cmd/Strg+Alt+F; Groß-/Kleinschreibung, reguläre Ausdrücke, Trefferzähler |
+| Kontextmenü im Editor, Formatierungsbefehle (fett, Link …) | ✅ Befehls-IDs wie Obsidian (`editor:toggle-bold` …), Kürzel Cmd/Strg+B, I, K, /, Enter; Untermenüs (`MenuItem.setSubmenu`), Event `editor-menu` |
+| Vim-Modus | ✅ `vimMode` aus `app.json` über `@replit/codemirror-vim`; `:w`, `:q`, `:wq`. Ohne `.obsidian.vimrc` |
+| Tabellen-Editor in der Live Preview | ✅ Zellen direkt bearbeiten, Tab/Enter/Pfeile, „+“ für Zeile/Spalte, Kontextmenü (einfügen, löschen, ausrichten); ändert beim Tippen nur die Zelle in der Quelle |
+| Fußnoten rendern | ✅ `[^1]`, `[^1]: …` (mit eingerückten Folgezeilen), `^[inline]`; Lesemodus mit nummerierter Liste, Live Preview mit Tooltip; `CachedMetadata.footnotes` |
 
 ### Organisieren
 

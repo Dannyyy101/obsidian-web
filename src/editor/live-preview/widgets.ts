@@ -1,11 +1,11 @@
 import { type EditorView, WidgetType } from "@codemirror/view";
 import { isExternalUrl, type LivePreviewHost } from "./host";
+import { copyCode } from "../render/code";
 import type { RenderContext } from "../render/context";
 import { renderEmbed } from "../render/embed";
 import { renderMarkdown } from "../render/markdown";
 import { renderMath } from "../render/math";
 import { renderMermaid } from "../render/mermaid";
-import { renderTable } from "../render/table";
 
 /** Öffnet den Link eines angeklickten `.internal-link`/`.external-link`. */
 export function followLink(el: HTMLElement, host: LivePreviewHost, evt: MouseEvent): boolean {
@@ -83,6 +83,56 @@ export class CheckboxWidget extends WidgetType {
   }
 }
 
+/** Sprache und Kopieren-Knopf in der ersten Zeile eines Codeblocks. */
+export class CodeFlairWidget extends WidgetType {
+  constructor(
+    private lang: string,
+    private code: string,
+  ) {
+    super();
+  }
+
+  eq(other: CodeFlairWidget) {
+    return other.lang === this.lang && other.code === this.code;
+  }
+
+  toDOM() {
+    const wrap = createSpan("code-block-flair-wrapper");
+    if (this.lang) wrap.createSpan({ cls: "code-block-flair-lang", text: this.lang });
+    const button = wrap.createSpan({ cls: "code-block-flair", text: "Kopieren", attr: { "aria-label": "Code kopieren" } });
+    button.addEventListener("mousedown", (evt) => evt.preventDefault());
+    button.addEventListener("click", (evt) => {
+      evt.preventDefault();
+      copyCode(this.code, button, "Kopieren");
+    });
+    return wrap;
+  }
+
+  ignoreEvent(evt: Event) {
+    return (evt.target as HTMLElement).closest?.(".code-block-flair") != null;
+  }
+}
+
+/** `[^label]` als hochgestellter Verweis; der Tooltip zeigt die Definition. */
+export class FootnoteRefWidget extends WidgetType {
+  constructor(
+    private label: string,
+    private definition: string,
+  ) {
+    super();
+  }
+
+  eq(other: FootnoteRefWidget) {
+    return other.label === this.label && other.definition === this.definition;
+  }
+
+  toDOM() {
+    const sup = createEl("sup", { cls: "footnote-ref cm-footref", text: `[${this.label}]` });
+    if (this.definition) sup.setAttr("title", this.definition);
+    return sup;
+  }
+}
+
 export class HrWidget extends WidgetType {
   eq() {
     return true;
@@ -133,7 +183,7 @@ function widgetContext(host: LivePreviewHost): RenderContext {
 }
 
 /**
- * Gerenderter Block (Tabelle, Callout, Diagramm, Embed). Klick auf einen Link folgt ihm, Klick
+ * Gerenderter Block (Callout, Diagramm, Embed). Klick auf einen Link folgt ihm, Klick
  * auf Bedienelemente (Einklappen, Medien) wirkt dort; sonst springt der Cursor in die Quelle.
  */
 abstract class RenderedWidget extends WidgetType {
@@ -171,13 +221,6 @@ abstract class RenderedWidget extends WidgetType {
 
   ignoreEvent() {
     return true;
-  }
-}
-
-export class TableWidget extends RenderedWidget {
-  protected cls = "cm-table-widget";
-  protected render(el: HTMLElement) {
-    renderTable(this.source, el, widgetContext(this.host));
   }
 }
 

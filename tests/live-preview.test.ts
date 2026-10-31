@@ -76,6 +76,32 @@ describe("Live Preview", () => {
     expect(inside.contentDOM.querySelector(".cm-table-widget")).toBeNull();
   });
 
+  it("Tabellen-Editor: Zelle bearbeiten schreibt nur diese Zelle in die Quelle", () => {
+    const table = "Text\n\n|  A  | B |\n|---|:-:|\n| **x** | y |\n\nEnde";
+    const view = editor(table, 0);
+    const cell = view.contentDOM.querySelector<HTMLElement>('.table-cell-wrapper[data-row="1"][data-col="0"]')!;
+    expect(cell.innerHTML).toBe("<strong>x</strong>");
+    cell.focus();
+    cell.dispatchEvent(new FocusEvent("focus"));
+    expect(cell.textContent).toBe("**x**");
+    cell.textContent = "**neu** | z";
+    cell.dispatchEvent(new FocusEvent("blur"));
+    expect(view.state.doc.toString()).toBe("Text\n\n|  A  | B |\n|---|:-:|\n| **neu** \\| z | y |\n\nEnde");
+    expect(cell.innerHTML).toBe("<strong>neu</strong> | z");
+  });
+
+  it("Fußnoten: Verweis hochgestellt mit Definition als Tooltip, Inline-Fußnote ohne Klammern", () => {
+    const doc = "Text[^1] und ^[nebenbei].\n\n[^1]: Die Quelle";
+    const view = editor(doc, doc.length);
+    const ref = view.contentDOM.querySelector<HTMLElement>("sup.footnote-ref")!;
+    expect(ref.textContent).toBe("[1]");
+    expect(ref.title).toBe("Die Quelle");
+    expect(lineText(view, 1)).toBe("Text[1] und nebenbei.");
+    expect(view.contentDOM.querySelector(".HyperMD-footnote .cm-footref")?.textContent).toBe("[^1]:");
+    const inside = editor(doc, doc.indexOf("[^1]") + 1);
+    expect(lineText(inside, 1)).toBe("Text[^1] und nebenbei.");
+  });
+
   describe("LaTeX", () => {
     beforeAll(async () => {
       // KaTeX rendert nicht im Quirks-Modus; die App hat einen Doctype, happy-dom meldet ihn nicht.
@@ -131,5 +157,15 @@ describe("Live Preview", () => {
       expect(content?.querySelector("h1")?.textContent).toBe("Notiz");
       expect(content?.querySelector("p")?.innerHTML).toBe("Eingebetteter <strong>Text</strong>");
     });
+  });
+
+  it("zeigt bei Codeblöcken Sprache und Kopieren-Knopf statt der Zaunzeile", () => {
+    const doc = "Text\n```js\nlet a = 1;\n```\nEnde";
+    const view = editor(doc, doc.length);
+    expect(view.contentDOM.querySelector(".code-block-flair-lang")?.textContent).toBe("js");
+    expect(view.contentDOM.querySelector(".code-block-flair")?.textContent).toBe("Kopieren");
+    const cursorInside = editor(doc, doc.indexOf("let"));
+    expect(cursorInside.contentDOM.querySelector(".code-block-flair")).toBeNull();
+    expect(lineText(cursorInside, 2)).toBe("```js");
   });
 });

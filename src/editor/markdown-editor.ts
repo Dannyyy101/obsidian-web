@@ -1,6 +1,6 @@
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
-import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
+import { ensureSyntaxTree, HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
 import { Compartment, EditorState } from "@codemirror/state";
 import { drawSelection, dropCursor, EditorView, keymap } from "@codemirror/view";
@@ -11,15 +11,22 @@ import { obsidianLezerExtensions } from "../markdown/syntax";
 import { setIcon } from "../ui/icons";
 import { Notice } from "../ui/notice";
 import { join } from "../shared/path";
+import { attachmentHandling } from "./attachments";
 import { autoPair } from "./auto-pair";
+import { documentSearch } from "./document-search";
 import { Editor } from "./editor";
+import { showEditorMenu } from "./editor-menu";
+import { FORMATTING_COMMANDS } from "./formatting";
 import { editorInfoField, editorLivePreviewField, livePreviewState, setLivePreview } from "./fields";
+import { folding, restoreFolds } from "./folding";
 import { inlineTitle } from "./inline-title";
+import { vimMode } from "./vim";
 import { listEditing } from "./lists";
 import { editorSuggest } from "./suggest/editor-suggest";
 import { LinkSuggest } from "./suggest/link-suggest";
 import { TagSuggest } from "./suggest/tag-suggest";
 import { livePreview, sourceModeDecorations } from "./live-preview/decorations";
+import { codeHighlightStyle, codeLanguages } from "./render/code";
 import { renderMarkdown } from "./render/markdown";
 import { type LivePreviewHost, mimeType } from "./live-preview/host";
 
@@ -73,6 +80,7 @@ export class MarkdownEditor {
   private applyingExternal = false;
   private mode = new Compartment();
   private title = new Compartment();
+  private vim = new Compartment();
   /** Editor-Erweiterungen der Plugins (`registerEditorExtension`). */
   private pluginExtensions = new Compartment();
   private host: LivePreviewHost;
@@ -185,10 +193,10 @@ export class MarkdownEditor {
     return this.vault.getConfig("readableLineLength") !== false;
   }
 
-  /** Editor-Einstellungen aus `app.json` neu anwenden (lesbare Zeilenlänge, Inline-Titel). */
+  /** Editor-Einstellungen aus `app.json` neu anwenden (lesbare Zeilenlänge, Inline-Titel, Vim). */
   applySettings(): void {
     this.sourceViewEl.toggleClass("is-readable-line-width", this.isReadableLineWidth());
-    this.view.dispatch({ effects: this.title.reconfigure(this.titleExtension()) });
+    this.view.dispatch({ effects: [this.title.reconfigure(this.titleExtension()), this.vim.reconfigure(this.vimExtension())] });
     this.renderReading();
   }
 
@@ -209,23 +217,51 @@ export class MarkdownEditor {
     return EditorState.create({
       doc,
       extensions: [
+        this.vim.of(this.vimExtension()),
         history(),
         editorSuggest([new LinkSuggest(this.app), new TagSuggest(this.app)], () => this.file),
+        attachmentHandling(this.app, () => this.file),
         drawSelection(),
         dropCursor(),
         highlightSelectionMatches(),
+        documentSearch(),
         autoPair({
           autoPairBrackets: this.vault.getConfig("autoPairBrackets") !== false,
           autoPairMarkdown: this.vault.getConfig("autoPairMarkdown") !== false,
         }),
+        folding(
+          { foldHeading: this.vault.getConfig("foldHeading") !== false, foldIndent: this.vault.getConfig("foldIndent") !== false },
+          (lines) => this.file && this.app.saveLocalStorage(`fold-${this.file.path}`, lines.length ? lines : null),
+        ),
         listEditing({
           useTab: this.vault.getConfig("useTab") !== false,
           tabSize: Number(this.vault.getConfig("tabSize")) || 4,
           smartIndentList: this.vault.getConfig("smartIndentList") !== false,
         }),
-        keymap.of([...defaultKeymap, ...historyKeymap, ...searchKeymap]),
-        markdown({ base: markdownLanguage, extensions: obsidianLezerExtensions }),
+        keymap.of([
+          // Vor defaultKeymap, das z. B. Mod-Enter, Mod-i und Mod-/ anders belegt.
+          ...FORMATTING_COMMANDS.filter((c) => c.key).map((c) => ({ key: c.key, run: c.run, preventDefault: true })),
+          ...defaultKeymap,
+          ...historyKeymap,
+          ...searchKeymap,
+        ]),
+        EditorView.domEventHandlers({
+          contextmenu: (evt, view) => {
+            // Mit Umschalt bleibt das Menü des Browsers (z. B. für Rechtschreibvorschläge).
+            if (evt.shiftKey) return false;
+            const pos = view.posAtCoords({ x: evt.clientX, y: evt.clientY });
+            if (pos !== null && !view.state.selection.ranges.some((r) => r.from <= pos && r.to >= pos)) {
+              view.dispatch({ selection: { anchor: pos } });
+            }
+            showEditorMenu(view, evt, (menu) =>
+              this.app.workspace.trigger("editor-menu", menu, this.editor, { app: this.app, file: this.file, editor: this.editor }),
+            );
+            return true;
+          },
+        }),
+        markdown({ base: markdownLanguage, extensions: obsidianLezerExtensions, codeLanguages }),
         syntaxHighlighting(obsidianHighlight),
+        syntaxHighlighting(codeHighlightStyle),
         this.mode.of(this.modeExtension()),
         this.title.of(this.titleExtension()),
         editorInfoField.init(() => ({ app: this.app, file: this.file, editor: this.editor })),
@@ -243,6 +279,12 @@ export class MarkdownEditor {
 
   getFile(): TFile | null {
     return this.file;
+  }
+
+  /** Obsidians Einstellung `vimMode` (standardmäßig aus); `:q` schließt den aktiven Tab. */
+  private vimExtension() {
+    if (this.vault.getConfig("vimMode") !== true) return [];
+    return vimMode({ save: () => this.save(), close: () => this.app.commands.executeCommandById("workspace:close") });
   }
 
   private titleExtension() {
@@ -398,6 +440,11 @@ export class MarkdownEditor {
     this.file = file;
     this.lastSaved = content;
     this.view.setState(this.createState(content));
+    const folds = this.app.loadLocalStorage(`fold-${file.path}`);
+    if (Array.isArray(folds)) {
+      ensureSyntaxTree(this.view.state, this.view.state.doc.length, 500);
+      restoreFolds(this.view, folds);
+    }
     this.updateTitle();
     this.showEmpty(false);
     this.onFile(file);

@@ -53,6 +53,9 @@ class EditorSettingTab extends CoreSettingTab {
     this.configToggle("Live Preview", "Formatierung beim Schreiben anzeigen. Ausgeschaltet gilt der Quellmodus.", "livePreview", true, () =>
       this.app.workspace.iterateEditors((editor) => editor.reconfigureMode()),
     );
+    this.configToggle("Überschriften einklappen", "Überschriften samt ihrem Abschnitt einklappen.", "foldHeading", true);
+    this.configToggle("Listen einklappen", "Listenpunkte samt ihren Unterpunkten einklappen.", "foldIndent", true);
+    this.configToggle("Vim-Tastenbelegung", "Bearbeiten mit Vim-Befehlen (Normal-, Einfüge- und visueller Modus, :w, :q).", "vimMode", false, applyAll);
   }
 }
 
@@ -69,6 +72,21 @@ class FilesLinksSettingTab extends CoreSettingTab {
       "alwaysUpdateLinks",
       true,
     );
+    new Setting(this.containerEl)
+      .setName("Wikilinks verwenden")
+      .setDesc("Erzeugt [[Wikilinks]] statt [Markdown-Links](…), z. B. für eingefügte Bilder.")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.app.vault.getConfig("useMarkdownLinks") !== true)
+          .onChange((value) => void this.app.vault.setConfig("useMarkdownLinks", !value)),
+      );
+    new Setting(this.containerEl)
+      .setName("Speicherort für neue Anhänge")
+      .setDesc("„/“ = Vault-Wurzel, „./“ = Ordner der Notiz, „./Name“ = Unterordner der Notiz, sonst ein fester Ordner.")
+      .addText((text) => {
+        text.setPlaceholder("/").setValue(String(this.app.vault.getConfig("attachmentFolderPath") ?? "/"));
+        text.inputEl.addEventListener("change", () => void this.app.vault.setConfig("attachmentFolderPath", text.getValue().trim() || "/"));
+      });
   }
 }
 

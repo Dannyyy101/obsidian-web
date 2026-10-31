@@ -48,12 +48,19 @@ export interface BlockCache {
   position: Pos;
 }
 
+/** Fußnotendefinition `[^id]: …` wie Obsidians `FootnoteCache`. */
+export interface FootnoteCache {
+  id: string;
+  position: Pos;
+}
+
 export interface CachedMetadata {
   links?: LinkCache[];
   embeds?: EmbedCache[];
   tags?: TagCache[];
   headings?: HeadingCache[];
   blocks?: Record<string, BlockCache>;
+  footnotes?: FootnoteCache[];
   frontmatter?: Record<string, unknown>;
   frontmatterPosition?: Pos;
   frontmatterLinks?: FrontmatterLinkCache[];
@@ -154,6 +161,7 @@ export function computeMetadata(text: string): CachedMetadata {
   const tags: TagCache[] = [];
   const headings: HeadingCache[] = [];
   const blocks: Record<string, BlockCache> = {};
+  const footnotes: FootnoteCache[] = [];
 
   const tree = obsidianMarkdownParser.parse(text);
   tree.iterate({
@@ -196,6 +204,12 @@ export function computeMetadata(text: string): CachedMetadata {
         case "Tag":
           tags.push({ tag: source, position: pos(n.from, n.to) });
           return false;
+        case "FootnoteDefinition": {
+          const label = n.node.getChild("FootnoteLabel");
+          if (label) footnotes.push({ id: text.slice(label.from, label.to), position: pos(n.from, n.to) });
+          // Kein return false: Definitionen können Links und Tags enthalten.
+          break;
+        }
         case "FencedCode":
         case "CodeBlock":
         case "InlineCode":
@@ -226,6 +240,7 @@ export function computeMetadata(text: string): CachedMetadata {
   if (tags.length) meta.tags = tags;
   if (headings.length) meta.headings = headings;
   if (Object.keys(blocks).length) meta.blocks = blocks;
+  if (footnotes.length) meta.footnotes = footnotes;
   return meta;
 }
 

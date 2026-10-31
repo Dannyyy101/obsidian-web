@@ -52,4 +52,10 @@ describe("computeMetadata", () => {
     expect(m.frontmatter).toBeUndefined();
     expect(m.links?.[0].link).toBe("x");
   });
+
+  it("Fußnotendefinitionen, Links darin zählen mit", () => {
+    const meta = computeMetadata("Text[^1]\n\n[^1]: Siehe [[Quelle]]");
+    expect(meta.footnotes?.map((f) => [f.id, f.position.start.line])).toEqual([["1", 2]]);
+    expect(meta.links?.map((l) => l.link)).toEqual(["Quelle"]);
+  });
 });

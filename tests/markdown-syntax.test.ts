@@ -98,3 +98,31 @@ describe("LaTeX (lezer)", () => {
     expect(math("```\n$$\nx\n$$\n```")).toEqual([]);
   });
 });
+
+describe("Fußnoten (lezer)", () => {
+  const ONLY = ["FootnoteReference", "FootnoteDefinition", "InlineFootnote", "FootnoteLabel", "Wikilink", "StrongEmphasis", "LinkReference", "Link"];
+
+  it("Verweise, Definitionen und Inline-Fußnoten", () => {
+    expect(nodes("Text[^1] und ^[inline **fett**].\n\n[^1]: Die [[Notiz]]", ONLY)).toEqual([
+      "FootnoteReference:[^1]",
+      "FootnoteLabel:1",
+      "InlineFootnote:^[inline **fett**]",
+      "StrongEmphasis:**fett**",
+      "FootnoteDefinition:[^1]: Die [[Notiz]]",
+      "FootnoteLabel:1",
+      "Wikilink:[[Notiz]]",
+    ]);
+  });
+
+  it("Definitionen sind keine Linkreferenzen und haben eingerückte Folgezeilen", () => {
+    expect(nodes("[^note]: Eins\n    zwei\nDanach", ["FootnoteDefinition", "LinkReference", "Paragraph"])).toEqual([
+      "FootnoteDefinition:[^note]: Eins\n    zwei",
+      "Paragraph:Danach",
+    ]);
+    expect(nodes("Absatz\n[^a]: Def", ["FootnoteDefinition", "Paragraph"])).toEqual(["Paragraph:Absatz", "FootnoteDefinition:[^a]: Def"]);
+  });
+
+  it("keine Fußnote ohne Label oder mit Leerzeichen", () => {
+    expect(nodes("[^ x] [^] [text](url) ^[]", ["FootnoteReference", "InlineFootnote"])).toEqual([]);
+  });
+});

@@ -1,4 +1,5 @@
 import type { ReferenceCache } from "../markdown/metadata";
+import { dirname, join } from "../shared/path";
 import { type MetadataCache, parseLinktext } from "./metadata-cache";
 import { type TAbstractFile, TFile, TFolder, type Vault } from "./vault";
 
@@ -69,10 +70,38 @@ export class FileManager {
     return `${embed ? "!" : ""}[${ref.displayText ?? ""}](${encodeURI(linktext)}${subpath})`;
   }
 
-  /** Obsidians `generateMarkdownLink` (Wikilink, kürzester Pfad). */
+  /**
+   * Obsidians `generateMarkdownLink`: kürzester Pfad, als Wikilink oder – bei `useMarkdownLinks` in
+   * `app.json` – als Markdown-Link. Nicht-Notizen werden eingebettet.
+   */
   generateMarkdownLink(file: TFile, sourcePath: string, subpath = "", alias = ""): string {
+    const embed = file.extension === "md" ? "" : "!";
+    if (this.vault.getConfig("useMarkdownLinks") === true) {
+      const linktext = this.metadataCache.fileToLinktext(file, sourcePath, false);
+      return `${embed}[${alias || (embed ? "" : file.basename)}](${encodeURI(linktext)}${subpath})`;
+    }
     const linktext = this.metadataCache.fileToLinktext(file, sourcePath);
-    return `${file.extension === "md" ? "" : "!"}[[${linktext}${subpath}${alias ? `|${alias}` : ""}]]`;
+    return `${embed}[[${linktext}${subpath}${alias ? `|${alias}` : ""}]]`;
+  }
+
+  /**
+   * Obsidians `getAvailablePathForAttachment`: freier Pfad für einen Anhang gemäß
+   * `attachmentFolderPath` – `/` Vault-Wurzel (Standard), `./` Ordner der Notiz, `./x` Unterordner
+   * der Notiz, sonst ein fester Ordner. Fehlende Ordner werden angelegt.
+   */
+  async getAvailablePathForAttachment(filename: string, sourcePath?: string): Promise<string> {
+    const setting = String(this.vault.getConfig("attachmentFolderPath") ?? "/").trim() || "/";
+    const noteDir = sourcePath ? dirname(sourcePath) : "/";
+    let folder: string;
+    if (setting === "/") folder = "/";
+    else if (setting === "." || setting === "./") folder = noteDir;
+    else if (setting.startsWith("./")) folder = join(noteDir, setting.slice(2));
+    else folder = setting;
+    folder = folder.replace(/^\/+|\/+$/g, "") || "/";
+    if (folder !== "/" && !this.vault.getAbstractFileByPath(folder)) await this.vault.createFolder(folder);
+    const dot = filename.lastIndexOf(".");
+    const [base, ext] = dot > 0 ? [filename.slice(0, dot), filename.slice(dot + 1)] : [filename, ""];
+    return this.vault.getAvailablePath(join(folder, base), ext);
   }
 
   async trashFile(file: TAbstractFile): Promise<void> {

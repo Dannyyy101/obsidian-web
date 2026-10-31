@@ -39,6 +39,7 @@ body {
   --sidebar-width: 280px;
   --header-height: 40px;
   --file-line-width: 700px;
+  --file-margins: 32px;
   --list-indent: 2em;
   --list-bullet-width: 1.5em;
   --list-marker-color: var(--text-faint);
@@ -94,6 +95,17 @@ body.theme-dark {
   --text-faint: #666;
   --text-accent: hsl(258, 88%, 72%);
   --text-selection: rgba(138, 92, 245, 0.33);
+  --code-normal: #dadada;
+  --code-comment: #7f8a95;
+  --code-function: #e5c07b;
+  --code-important: #f0a35e;
+  --code-keyword: #d982e8;
+  --code-operator: #e06c75;
+  --code-property: #63c3d6;
+  --code-punctuation: #a3a3a3;
+  --code-string: #9ccc65;
+  --code-tag: #e06c75;
+  --code-value: #b39cf5;
 }
 
 body.theme-light {
@@ -113,6 +125,17 @@ body.theme-light {
   --text-faint: #ababab;
   --text-accent: hsl(258, 70%, 52%);
   --text-selection: rgba(138, 92, 245, 0.2);
+  --code-normal: #222;
+  --code-comment: #8a8f98;
+  --code-function: #b07a00;
+  --code-important: #c4520d;
+  --code-keyword: #a626a4;
+  --code-operator: #c7254e;
+  --code-property: #0b7fa0;
+  --code-punctuation: #5c5c5c;
+  --code-string: #3c8a1e;
+  --code-tag: #c7254e;
+  --code-value: #6f42c1;
 }
 
 * {
@@ -742,7 +765,8 @@ textarea {
 .markdown-source-view .cm-editor .cm-scroller {
   font-family: var(--font-text);
   line-height: var(--line-height-normal);
-  padding: var(--size-4-4) var(--size-4-4) 50vh;
+  /* Seitenrand wie Obsidians `--file-margins`: Platz für die Einklapp-Pfeile. */
+  padding: var(--size-4-4) var(--file-margins) 50vh;
 }
 
 .markdown-source-view .cm-content {
@@ -818,6 +842,7 @@ textarea {
 .is-live-preview .cm-link,
 .is-live-preview .internal-link,
 .is-live-preview .external-link {
+  color: var(--text-accent);
   cursor: pointer;
   text-decoration: underline;
   text-decoration-color: color-mix(in srgb, var(--text-accent) 45%, transparent);
@@ -912,6 +937,27 @@ textarea {
   border-top-right-radius: var(--radius-s);
 }
 
+.code-block-flair-wrapper {
+  float: right;
+  display: inline-flex;
+  gap: 0.75em;
+  align-items: center;
+  font-family: var(--font-interface);
+  font-size: var(--font-ui-smaller);
+  color: var(--text-faint);
+}
+
+.code-block-flair {
+  cursor: pointer;
+  padding: 0 0.4em;
+  border-radius: var(--radius-s);
+  color: var(--text-muted);
+}
+
+.code-block-flair:hover {
+  background: var(--background-modifier-hover);
+}
+
 .cm-line.HyperMD-codeblock-end {
   border-bottom-left-radius: var(--radius-s);
   border-bottom-right-radius: var(--radius-s);
@@ -942,6 +988,69 @@ textarea {
   overflow-x: auto;
   padding: 0.5em 0;
   cursor: text;
+}
+
+.cm-table-editor .table-wrapper {
+  position: relative;
+  display: inline-block;
+  padding: 0 1.75em 1.75em 0;
+}
+
+/* Tabellen-Editor: Zellen sind direkt bearbeitbar. */
+.cm-table-editor .table-cell-wrapper {
+  min-width: 2em;
+  min-height: 1lh;
+  outline: none;
+  white-space: pre-wrap;
+}
+
+.cm-table-editor th:has(.table-cell-wrapper:focus),
+.cm-table-editor td:has(.table-cell-wrapper:focus) {
+  box-shadow: inset 0 0 0 2px var(--interactive-accent);
+}
+
+.cm-table-editor .table-row-btn,
+.cm-table-editor .table-col-btn {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-faint);
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.cm-table-editor .table-row-btn {
+  left: 0;
+  bottom: 0.15em;
+  height: 1.25em;
+  width: 1.5em;
+}
+
+.cm-table-editor .table-col-btn {
+  right: 0.15em;
+  top: 0;
+  width: 1.25em;
+  height: 1.5em;
+}
+
+.cm-table-editor:hover .table-row-btn,
+.cm-table-editor:hover .table-col-btn {
+  opacity: 1;
+}
+
+.cm-table-editor .table-row-btn:hover,
+.cm-table-editor .table-col-btn:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.cm-table-editor .table-row-btn .svg-icon,
+.cm-table-editor .table-col-btn .svg-icon {
+  width: 14px;
+  height: 14px;
 }
 
 .cm-table-widget table {
@@ -1269,7 +1378,49 @@ textarea {
 .markdown-rendered pre code {
   padding: 0;
   background: none;
+  color: var(--code-normal);
 }
+
+.markdown-rendered pre {
+  position: relative;
+}
+
+.copy-code-button {
+  position: absolute;
+  top: 0.4em;
+  right: 0.4em;
+  padding: 0.2em 0.6em;
+  font-family: var(--font-interface);
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.markdown-rendered pre:hover .copy-code-button,
+.copy-code-button:focus-visible,
+.copy-code-button.mod-copied {
+  opacity: 1;
+}
+
+/* Token-Farben: Prism-Klassen im Lesemodus, cm-Klassen in Codeblock-Zeilen des Editors. */
+.token.comment, .HyperMD-codeblock .cm-comment { color: var(--code-comment); font-style: italic; }
+.token.keyword, .HyperMD-codeblock .cm-keyword { color: var(--code-keyword); }
+.token.string, .token.regex, .token.attr-value,
+.HyperMD-codeblock .cm-string, .HyperMD-codeblock .cm-regex, .HyperMD-codeblock .cm-attr-value { color: var(--code-string); }
+.token.number, .token.boolean, .token.class-name, .token.variable,
+.HyperMD-codeblock .cm-number, .HyperMD-codeblock .cm-boolean, .HyperMD-codeblock .cm-class-name, .HyperMD-codeblock .cm-variable { color: var(--code-value); }
+.token.function, .HyperMD-codeblock .cm-function { color: var(--code-function); }
+.token.operator, .HyperMD-codeblock .cm-operator { color: var(--code-operator); }
+.token.punctuation, .HyperMD-codeblock .cm-punctuation { color: var(--code-punctuation); }
+.token.property, .token.attr-name, .token.builtin,
+.HyperMD-codeblock .cm-property, .HyperMD-codeblock .cm-attr-name, .HyperMD-codeblock .cm-builtin { color: var(--code-property); }
+.token.tag, .HyperMD-codeblock .cm-tag { color: var(--code-tag); }
+.token.important, .HyperMD-codeblock .cm-important { color: var(--code-important); }
 
 .markdown-rendered hr {
   border: none;
@@ -1815,6 +1966,15 @@ button:disabled {
   height: 16px;
 }
 
+.menu-item-title {
+  flex: 1;
+}
+
+.menu-item-icon.mod-submenu {
+  margin-left: auto;
+  color: var(--text-faint);
+}
+
 .menu-separator {
   height: 1px;
   margin: 4px 0;
@@ -2090,4 +2250,189 @@ body {
 
 .graph-controls .mod-search-setting .setting-item-info {
   display: none;
+}
+
+/* Einklappen: Pfeil links neben Überschriften und Listenpunkten, sichtbar beim Hovern. */
+.cm-fold-indicator {
+  position: absolute;
+  margin-left: -1.3em;
+  width: 1.1em;
+  display: inline-flex;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-faint);
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+.cm-line:hover .cm-fold-indicator,
+.cm-fold-indicator.is-collapsed {
+  opacity: 1;
+}
+
+.cm-fold-indicator .collapse-indicator {
+  display: inline-flex;
+  align-items: center;
+  height: 1lh;
+}
+
+.cm-fold-indicator .svg-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.cm-fold-indicator.is-collapsed .svg-icon {
+  transform: rotate(-90deg);
+}
+
+.cm-foldPlaceholder {
+  margin-left: 0.4em;
+  padding: 0 0.3em;
+  color: var(--text-faint);
+  background: var(--background-modifier-hover);
+  border: none;
+  border-radius: var(--radius-s);
+  cursor: pointer;
+}
+/* Suchen & Ersetzen in der Notiz (Obsidians `.document-search-container`). */
+.markdown-source-view .cm-panels {
+  background: var(--background-primary);
+  color: var(--text-normal);
+}
+
+.markdown-source-view .cm-panels-top {
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.document-search-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-2);
+  padding: var(--size-4-2) var(--size-4-3);
+  font-family: var(--font-interface);
+  font-size: var(--font-ui-small);
+}
+
+.document-search,
+.document-replace {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-1);
+}
+
+.document-search-input,
+.document-replace-input {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 8px;
+  font: inherit;
+  color: var(--text-normal);
+  background: var(--background-modifier-form-field);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  outline: none;
+}
+
+.document-search-input:focus,
+.document-replace-input:focus {
+  border-color: var(--interactive-accent);
+}
+
+.document-search-input.mod-invalid {
+  border-color: var(--text-error);
+}
+
+.document-search-count {
+  min-width: 5em;
+  text-align: right;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  white-space: nowrap;
+}
+
+.document-search-count.mod-no-results {
+  color: var(--text-error);
+}
+
+.document-search-button.is-active {
+  color: var(--text-accent);
+  background: var(--background-modifier-hover);
+}
+
+.document-replace-button {
+  padding: 4px 10px;
+  font: inherit;
+  color: var(--text-normal);
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  cursor: pointer;
+}
+
+.document-replace-button:hover {
+  background: var(--background-modifier-hover);
+}
+
+.markdown-source-view .cm-searchMatch {
+  background: rgba(255, 208, 0, 0.35);
+  border-radius: 2px;
+}
+
+.markdown-source-view .cm-searchMatch-selected {
+  background: rgba(255, 140, 0, 0.55);
+/* Vim-Modus: Blockcursor und Befehlszeile im Stil der Oberfläche. */
+.markdown-source-view .cm-fat-cursor {
+  background: var(--interactive-accent) !important;
+  opacity: 0.6;
+}
+
+.markdown-source-view .cm-vim-panel {
+  padding: 2px var(--size-4-3);
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+  background: var(--background-secondary);
+}
+
+.markdown-source-view .cm-vim-panel input {
+  font: inherit;
+  color: var(--text-normal);
+/* Fußnoten: Verweise hochgestellt, Liste am Ende des Lesemodus. */
+.footnote-ref {
+  font-size: 0.75em;
+  line-height: 0;
+  vertical-align: super;
+}
+
+.footnote-ref a,
+.footnote-backref,
+.cm-footref {
+  color: var(--text-accent);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.cm-inline-footnote {
+  font-size: 0.8em;
+  color: var(--text-muted);
+  vertical-align: super;
+}
+
+.cm-line.HyperMD-footnote {
+  font-size: var(--font-smaller);
+  color: var(--text-muted);
+}
+
+.markdown-rendered section.footnotes {
+  margin-top: 2em;
+  font-size: var(--font-smaller);
+  color: var(--text-muted);
+}
+
+.markdown-rendered .footnotes-sep {
+  margin: 1em 0;
+}
+
+.markdown-rendered .footnotes-list p {
+  margin: 0.25em 0;
 }

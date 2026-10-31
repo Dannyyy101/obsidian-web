@@ -3,6 +3,8 @@ import { obsidianMarkdownParser } from "../../markdown/syntax";
 import { followLink } from "../live-preview/widgets";
 import { parseCallout, renderCalloutShell } from "./callout";
 import type { RenderContext } from "./context";
+import { copyCode, highlightCodeElement } from "./code";
+import { FootnoteState, followFootnoteLink, renderFootnoteSection } from "./footnotes";
 import { renderInline, renderInlineChildren } from "./inline";
 import { mathSource, renderMath } from "./math";
 import { renderMermaid } from "./mermaid";
@@ -15,13 +17,20 @@ import { renderTable } from "./table";
  */
 export function renderMarkdown(source: string, el: HTMLElement, ctx: RenderContext): void {
   const tree = obsidianMarkdownParser.parse(source);
+  // Fußnoten gehören zum Dokument: Callouts rendern mit dem Zustand ihres Dokuments weiter.
+  const footnotes = ctx.footnotes ? null : new FootnoteState(source, tree);
+  if (footnotes) ctx = { ...ctx, footnotes };
   renderBlocks(source, tree.topNode, el, ctx);
+  if (footnotes) renderFootnoteSection(el, footnotes, ctx, (text, parent, c) => renderInline(text, parent, c));
   if (ctx.depth === 0) attachLinkHandler(el, ctx);
 }
 
 function attachLinkHandler(el: HTMLElement, ctx: RenderContext) {
   el.addEventListener("click", (evt) => {
-    const link = (evt.target as HTMLElement).closest<HTMLElement>("a.internal-link, a.external-link");
+    const target = evt.target as HTMLElement;
+    const footnote = target.closest<HTMLElement>("a.footnote-link");
+    if (footnote && el.contains(footnote)) return followFootnoteLink(footnote, el, evt);
+    const link = target.closest<HTMLElement>("a.internal-link, a.external-link");
     if (link && el.contains(link) && evt.button === 0) followLink(link, ctx.host, evt);
   });
 }
@@ -84,7 +93,14 @@ function renderBlock(text: string, node: SyntaxNode, el: HTMLElement, ctx: Rende
       const code = codeText(text, node);
       if (lang === "mermaid") return renderMermaid(code, el.createDiv());
       const pre = el.createEl("pre", { cls: lang ? `language-${lang}` : undefined });
-      pre.createEl("code", { cls: lang ? `language-${lang}` : undefined, text: code });
+      const codeEl = pre.createEl("code", { cls: lang ? `language-${lang}` : undefined, text: code });
+      void highlightCodeElement(code, lang, codeEl);
+      const copy = pre.createEl("button", { cls: "copy-code-button", text: "Kopieren" });
+      copy.addEventListener("click", (evt) => {
+        evt.preventDefault();
+        evt.stopPropagation();
+        copyCode(code, copy, "Kopieren");
+      });
       return;
     }
 
@@ -106,6 +122,7 @@ function renderBlock(text: string, node: SyntaxNode, el: HTMLElement, ctx: Rende
       return;
 
     case "Frontmatter":
+    case "FootnoteDefinition":
     case "LinkReference":
     case "CommentBlock":
       return;
