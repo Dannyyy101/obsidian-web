@@ -119,7 +119,7 @@ für den Rest vor.
 | Klammern und Markdown-Zeichen automatisch schließen | ✅ `autoPairBrackets`, `autoPairMarkdown` aus `app.json` |
 | Bilder einfügen/ablegen (Ablage nach `attachmentFolderPath`) | ✅ Auch andere Dateien per Drag & Drop; `useMarkdownLinks` wird beachtet |
 | Syntax-Highlighting in Codeblöcken, Kopieren-Knopf | ✅ Sprachen aus `@codemirror/language-data`, im Lesemodus mit Prism-Klassen (`.token.keyword`) |
-| Überschriften und Listen einklappen | ⬜ |
+| Überschriften und Listen einklappen | ✅ `foldHeading`, `foldIndent`; Zustand pro Datei im `localStorage`; Befehle `editor:toggle-fold`, `editor:fold-all`, `editor:unfold-all`. Im Lesemodus noch nicht |
 | Suchen & Ersetzen in der Notiz (eigene Oberfläche) | ⬜ |
 | Kontextmenü im Editor, Formatierungsbefehle (fett, Link …) | ⬜ |
 | Vim-Modus | ⬜ |

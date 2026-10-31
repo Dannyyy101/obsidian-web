@@ -53,6 +53,8 @@ class EditorSettingTab extends CoreSettingTab {
     this.configToggle("Live Preview", "Formatierung beim Schreiben anzeigen. Ausgeschaltet gilt der Quellmodus.", "livePreview", true, () =>
       this.app.workspace.iterateEditors((editor) => editor.reconfigureMode()),
     );
+    this.configToggle("Überschriften einklappen", "Überschriften samt ihrem Abschnitt einklappen.", "foldHeading", true);
+    this.configToggle("Listen einklappen", "Listenpunkte samt ihren Unterpunkten einklappen.", "foldIndent", true);
   }
 }
 

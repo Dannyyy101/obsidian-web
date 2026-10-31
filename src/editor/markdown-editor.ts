@@ -1,6 +1,6 @@
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
-import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
+import { ensureSyntaxTree, HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
 import { Compartment, EditorState } from "@codemirror/state";
 import { drawSelection, dropCursor, EditorView, keymap } from "@codemirror/view";
@@ -15,6 +15,7 @@ import { attachmentHandling } from "./attachments";
 import { autoPair } from "./auto-pair";
 import { Editor } from "./editor";
 import { editorInfoField, editorLivePreviewField, livePreviewState, setLivePreview } from "./fields";
+import { folding, restoreFolds } from "./folding";
 import { inlineTitle } from "./inline-title";
 import { listEditing } from "./lists";
 import { editorSuggest } from "./suggest/editor-suggest";
@@ -221,6 +222,10 @@ export class MarkdownEditor {
           autoPairBrackets: this.vault.getConfig("autoPairBrackets") !== false,
           autoPairMarkdown: this.vault.getConfig("autoPairMarkdown") !== false,
         }),
+        folding(
+          { foldHeading: this.vault.getConfig("foldHeading") !== false, foldIndent: this.vault.getConfig("foldIndent") !== false },
+          (lines) => this.file && this.app.saveLocalStorage(`fold-${this.file.path}`, lines.length ? lines : null),
+        ),
         listEditing({
           useTab: this.vault.getConfig("useTab") !== false,
           tabSize: Number(this.vault.getConfig("tabSize")) || 4,
@@ -402,6 +407,11 @@ export class MarkdownEditor {
     this.file = file;
     this.lastSaved = content;
     this.view.setState(this.createState(content));
+    const folds = this.app.loadLocalStorage(`fold-${file.path}`);
+    if (Array.isArray(folds)) {
+      ensureSyntaxTree(this.view.state, this.view.state.doc.length, 500);
+      restoreFolds(this.view, folds);
+    }
     this.updateTitle();
     this.showEmpty(false);
     this.onFile(file);
