@@ -5,6 +5,8 @@ import { FileManager } from "../core/file-manager";
 import { MetadataCache, type MetadataParser, type MetadataStore } from "../core/metadata-cache";
 import type { TFile, Vault } from "../core/vault";
 import { join } from "../shared/path";
+import type { EditorView } from "@codemirror/view";
+import { foldAll, toggleFold, unfoldAll } from "../editor/folding";
 import { MarkdownEditor } from "../editor/markdown-editor";
 import { CommandPalette } from "../ui/command-palette";
 import { promptText } from "../ui/dialogs";
@@ -183,6 +185,19 @@ export class App {
         return true;
       },
     });
+    const foldCommand = (id: string, name: string, run: (view: EditorView) => unknown) =>
+      this.commands.addCommand({
+        id,
+        name,
+        checkCallback: (checking) => {
+          if (!this.editor.getFile() || this.editor.isReading()) return false;
+          if (!checking) run(this.editor.editor.cm);
+          return true;
+        },
+      });
+    foldCommand("editor:toggle-fold", "Einklappen in der aktuellen Zeile umschalten", toggleFold);
+    foldCommand("editor:fold-all", "Alle Überschriften und Listen einklappen", foldAll);
+    foldCommand("editor:unfold-all", "Alle Überschriften und Listen ausklappen", unfoldAll);
     this.commands.addCommand({
       id: "switcher:open",
       name: "Schnellwechsler: Öffnen",

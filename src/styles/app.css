@@ -39,6 +39,7 @@ body {
   --sidebar-width: 280px;
   --header-height: 40px;
   --file-line-width: 700px;
+  --file-margins: 32px;
   --list-indent: 2em;
   --list-bullet-width: 1.5em;
   --list-marker-color: var(--text-faint);
@@ -742,7 +743,8 @@ textarea {
 .markdown-source-view .cm-editor .cm-scroller {
   font-family: var(--font-text);
   line-height: var(--line-height-normal);
-  padding: var(--size-4-4) var(--size-4-4) 50vh;
+  /* Seitenrand wie Obsidians `--file-margins`: Platz für die Einklapp-Pfeile. */
+  padding: var(--size-4-4) var(--file-margins) 50vh;
 }
 
 .markdown-source-view .cm-content {
@@ -2090,4 +2092,47 @@ body {
 
 .graph-controls .mod-search-setting .setting-item-info {
   display: none;
+}
+
+/* Einklappen: Pfeil links neben Überschriften und Listenpunkten, sichtbar beim Hovern. */
+.cm-fold-indicator {
+  position: absolute;
+  margin-left: -1.3em;
+  width: 1.1em;
+  display: inline-flex;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-faint);
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+.cm-line:hover .cm-fold-indicator,
+.cm-fold-indicator.is-collapsed {
+  opacity: 1;
+}
+
+.cm-fold-indicator .collapse-indicator {
+  display: inline-flex;
+  align-items: center;
+  height: 1lh;
+}
+
+.cm-fold-indicator .svg-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.cm-fold-indicator.is-collapsed .svg-icon {
+  transform: rotate(-90deg);
+}
+
+.cm-foldPlaceholder {
+  margin-left: 0.4em;
+  padding: 0 0.3em;
+  color: var(--text-faint);
+  background: var(--background-modifier-hover);
+  border: none;
+  border-radius: var(--radius-s);
+  cursor: pointer;
 }
