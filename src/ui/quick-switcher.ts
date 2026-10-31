@@ -130,7 +130,7 @@ export class QuickSwitcher extends Modal {
 }
 
 /** Getroffene Zeichen hervorheben (`.suggestion-highlight`). */
-function highlight(el: HTMLElement, text: string, matches: number[]) {
+export function highlight(el: HTMLElement, text: string, matches: number[]) {
   const nfc = text.normalize("NFC");
   const hits = new Set(matches);
   let run = "";

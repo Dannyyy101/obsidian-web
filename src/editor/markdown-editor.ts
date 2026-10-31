@@ -13,6 +13,9 @@ import { Notice } from "../ui/notice";
 import { join } from "../shared/path";
 import { inlineTitle } from "./inline-title";
 import { listEditing } from "./lists";
+import { editorSuggest } from "./suggest/editor-suggest";
+import { LinkSuggest } from "./suggest/link-suggest";
+import { TagSuggest } from "./suggest/tag-suggest";
 import { livePreview, sourceModeDecorations } from "./live-preview/decorations";
 import { renderMarkdown } from "./render/markdown";
 import { type LivePreviewHost, mimeType } from "./live-preview/host";
@@ -190,6 +193,7 @@ export class MarkdownEditor {
       doc,
       extensions: [
         history(),
+        editorSuggest([new LinkSuggest(this.app), new TagSuggest(this.app)], () => this.file),
         drawSelection(),
         dropCursor(),
         highlightSelectionMatches(),

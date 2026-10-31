@@ -1724,6 +1724,22 @@ button:disabled {
   font-size: var(--font-ui-small);
 }
 
+/* --- Vorschläge im Editor (`[[`, `#`) -------------------------------------------------------- */
+
+.suggestion-container {
+  position: fixed;
+  z-index: 50;
+  width: 300px;
+  max-width: calc(100vw - 16px);
+  max-height: 300px;
+  overflow: auto;
+  padding: 4px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+}
+
 /* --- Notices & Menüs ------------------------------------------------------------------------ */
 
 .notice-container {
