@@ -76,6 +76,20 @@ describe("Live Preview", () => {
     expect(inside.contentDOM.querySelector(".cm-table-widget")).toBeNull();
   });
 
+  it("Tabellen-Editor: Zelle bearbeiten schreibt nur diese Zelle in die Quelle", () => {
+    const table = "Text\n\n|  A  | B |\n|---|:-:|\n| **x** | y |\n\nEnde";
+    const view = editor(table, 0);
+    const cell = view.contentDOM.querySelector<HTMLElement>('.table-cell-wrapper[data-row="1"][data-col="0"]')!;
+    expect(cell.innerHTML).toBe("<strong>x</strong>");
+    cell.focus();
+    cell.dispatchEvent(new FocusEvent("focus"));
+    expect(cell.textContent).toBe("**x**");
+    cell.textContent = "**neu** | z";
+    cell.dispatchEvent(new FocusEvent("blur"));
+    expect(view.state.doc.toString()).toBe("Text\n\n|  A  | B |\n|---|:-:|\n| **neu** \\| z | y |\n\nEnde");
+    expect(cell.innerHTML).toBe("<strong>neu</strong> | z");
+  });
+
   describe("LaTeX", () => {
     beforeAll(async () => {
       // KaTeX rendert nicht im Quirks-Modus; die App hat einen Doctype, happy-dom meldet ihn nicht.

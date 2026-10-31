@@ -123,7 +123,7 @@ für den Rest vor.
 | Suchen & Ersetzen in der Notiz (eigene Oberfläche) | ✅ Cmd/Strg+F, Cmd/Strg+Alt+F; Groß-/Kleinschreibung, reguläre Ausdrücke, Trefferzähler |
 | Kontextmenü im Editor, Formatierungsbefehle (fett, Link …) | ✅ Befehls-IDs wie Obsidian (`editor:toggle-bold` …), Kürzel Cmd/Strg+B, I, K, /, Enter; Untermenüs (`MenuItem.setSubmenu`), Event `editor-menu` |
 | Vim-Modus | ✅ `vimMode` aus `app.json` über `@replit/codemirror-vim`; `:w`, `:q`, `:wq`. Ohne `.obsidian.vimrc` |
-| Tabellen-Editor in der Live Preview | ⬜ |
+| Tabellen-Editor in der Live Preview | ✅ Zellen direkt bearbeiten, Tab/Enter/Pfeile, „+“ für Zeile/Spalte, Kontextmenü (einfügen, löschen, ausrichten); ändert beim Tippen nur die Zelle in der Quelle |
 | Fußnoten rendern | ⬜ |
 
 ### Organisieren
