@@ -2,6 +2,8 @@ import type { Extension } from "@codemirror/state";
 import type { App } from "../app/app";
 import type { Command } from "../core/commands";
 import { Component } from "../core/component";
+import type { Editor } from "../editor/editor";
+import { MarkdownView } from "../ui/markdown-view";
 import type { SettingTab as SettingTabEntry } from "../ui/settings-modal";
 
 export interface PluginManifest {
@@ -19,6 +21,12 @@ export interface PluginManifest {
 
 export type ObsidianProtocolData = { action: string } & Record<string, string>;
 export type ObsidianProtocolHandler = (params: ObsidianProtocolData) => unknown;
+
+/** Obsidians `Command` samt den Varianten, die einen aktiven Markdown-Editor voraussetzen. */
+export interface PluginCommand extends Command {
+  editorCallback?: (editor: Editor, view: MarkdownView) => unknown;
+  editorCheckCallback?: (checking: boolean, editor: Editor, view: MarkdownView) => boolean | void;
+}
 
 /** Entspricht Obsidians `Plugin`. Alles, was ein Plugin registriert, wird bei `unload` entfernt. */
 export class Plugin extends Component {
@@ -43,12 +51,23 @@ export class Plugin extends Component {
     return el;
   }
 
-  addCommand(command: Command): Command {
-    const full: Command = {
+  addCommand(command: PluginCommand): PluginCommand {
+    const full: PluginCommand = {
       ...command,
       id: `${this.manifest.id}:${command.id}`,
       name: `${this.manifest.name}: ${command.name}`,
     };
+    const { editorCallback, editorCheckCallback } = command;
+    if (editorCallback || editorCheckCallback) {
+      // Wie in Obsidian nur verfügbar, solange ein Markdown-Editor aktiv ist (nicht im Lesemodus).
+      full.checkCallback = (checking) => {
+        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        if (!view || view.getMode() !== "source") return false;
+        if (editorCheckCallback) return editorCheckCallback(checking, view.editor, view);
+        if (!checking) editorCallback!(view.editor, view);
+        return true;
+      };
+    }
     this.app.commands.addCommand(full);
     this.register(() => this.app.commands.removeCommand(full.id));
     return full;

@@ -1,5 +1,6 @@
 import type { App } from "../app/app";
 import { Component } from "../core/component";
+import { Scope } from "./keymap";
 
 /** Entspricht Obsidians `Modal`. */
 export class Modal extends Component {
@@ -9,12 +10,8 @@ export class Modal extends Component {
   titleEl: HTMLElement;
   contentEl: HTMLElement;
   shouldRestoreSelection = true;
-  private onKeydown = (evt: KeyboardEvent) => {
-    if (evt.key === "Escape") {
-      evt.preventDefault();
-      this.close();
-    }
-  };
+  /** Tastenkürzel, solange der Dialog offen ist; Escape schließt ihn. */
+  scope = new Scope();
 
   constructor(app: App) {
     super();
@@ -26,17 +23,21 @@ export class Modal extends Component {
     close.addEventListener("click", () => this.close());
     this.titleEl = this.modalEl.createDiv("modal-title");
     this.contentEl = this.modalEl.createDiv("modal-content");
+    this.scope.register([], "Escape", () => {
+      this.close();
+      return false;
+    });
   }
 
   open(): void {
     document.body.appendChild(this.containerEl);
-    document.addEventListener("keydown", this.onKeydown);
+    this.app.keymap.pushScope(this.scope);
     this.load();
     this.onOpen();
   }
 
   close(): void {
-    document.removeEventListener("keydown", this.onKeydown);
+    this.app.keymap.popScope(this.scope);
     this.containerEl.detach();
     this.unload();
     this.onClose();

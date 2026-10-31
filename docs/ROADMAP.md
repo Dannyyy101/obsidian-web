@@ -78,12 +78,15 @@ für den Rest vor.
 
 | Feature | Status | Anmerkung |
 |---|---|---|
-| Modul `obsidian`, Plugin-Loader aus `.obsidian/plugins/` | 🟡 | Reicht für remotely-save und Latex Suite |
+| Modul `obsidian`, Plugin-Loader aus `.obsidian/plugins/` | 🟡 | Reicht für remotely-save, Latex Suite und Omnisearch |
 | DOM- und JS-Erweiterungen (`createEl`, `Array.first`, `node.win` …) | ✅ | |
 | `Modal`, `Setting`, `Notice`, `Menu`, `PluginSettingTab`, `requestUrl`, `Platform` | ✅ | |
 | `registerEditorExtension`, `workspace.updateOptions`, CodeMirror/Lezer per `require` | ✅ | Dieselben Instanzen wie im Editor |
 | `editorInfoField`, `editorLivePreviewField`, `livePreviewState` | ✅ | `MarkdownFileInfo` ohne `editor` (keine `Editor`-Fassade) |
 | `Scope`, `app.keymap`, `AbstractInputSuggest`, `MarkdownRenderer`, `sanitizeHTMLToDom`, `renderMath`, `i18next` | ✅ | `renderMath` rendert mit KaTeX statt MathJax, `\class` wird zu `\htmlClass` |
+| `Editor`-Fassade, `MarkdownView`, `leaf.view`/`getViewState`, `getActiveViewOfType`, `editorCallback` | ✅ | `MarkdownView` umhüllt den Editor des Tabs; Splits/Anheften gibt es noch nicht |
+| `Modal.scope`, `metadataCache.isUserIgnored`, `getAllTags`, `parseFrontMatterAliases`, `getLinkpath` | ✅ | |
+| Omnisearch als unverändertes Original-Plugin | ✅ | Index in IndexedDB; ohne HTTP-API (braucht Node) und ohne Text-Extractor (PDF/Bilder) |
 | Latex Suite als unverändertes Original-Plugin | 🟡 | Snippets, Tabstops, Formelvorschau, Einstellungen. Snippets lösen auch in Code aus, weil das Plugin Codeblöcke an Obsidians internen Knotennamen (`HyperMD-codeblock…`, `inline-code`) erkennt |
 
 ---
@@ -92,7 +95,7 @@ für den Rest vor.
 
 | Bereich | Was fehlt noch |
 |---|---|
-| **Plugin-API** | `registerView`, `registerMarkdownPostProcessor`, `registerEditorSuggest` sind leere Stubs. Es gibt keine `Editor`-Fassade (`editor.getCursor()` …) und keine `MarkdownView`. Deshalb laufen die meisten Community-Plugins nicht. |
+| **Plugin-API** | `registerView`, `registerMarkdownPostProcessor`, `registerEditorSuggest` sind leere Stubs. `Editor` und `MarkdownView` decken die gängigen Methoden ab, `Workspace` kennt aber noch keine Splits und Seitenleisten-Leaves. |
 | **Suche** | Es fehlen `OR`, reguläre Ausdrücke, `line:`, `block:`, `section:`, Groß-/Kleinschreibung beachten, Sortieroptionen und Suchen & Ersetzen. |
 | **Einstellungen** | Es fehlen Tastenkürzel, Core-Plugins an/aus, Verwaltung der Community-Plugins (installieren, aktivieren, deaktivieren) und Dateien & Anhänge vollständig. |
 | **Tastenkürzel** | Sie sind fest eingebaut; `hotkeys.json` wird nicht gelesen. |

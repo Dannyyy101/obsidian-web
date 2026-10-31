@@ -12,6 +12,7 @@ import { setIcon } from "../ui/icons";
 import { Notice } from "../ui/notice";
 import { join } from "../shared/path";
 import { autoPair } from "./auto-pair";
+import { Editor } from "./editor";
 import { editorInfoField, editorLivePreviewField, livePreviewState, setLivePreview } from "./fields";
 import { inlineTitle } from "./inline-title";
 import { listEditing } from "./lists";
@@ -53,6 +54,10 @@ export class MarkdownEditor {
   /** Kopfzeile links/rechts, z. B. für die Umschalter der Seitenleisten. */
   headerLeftEl: HTMLElement;
   actionsEl: HTMLElement;
+  /** Inhalt unter der Kopfzeile (Obsidians `view.contentEl`). */
+  contentEl: HTMLElement;
+  /** Obsidians `Editor`-Fassade für Plugins. */
+  readonly editor: Editor;
   private titleEl: HTMLElement;
   private modeButtonEl: HTMLElement;
   private readingButtonEl: HTMLElement;
@@ -108,7 +113,7 @@ export class MarkdownEditor {
     this.readingButtonEl = actions.createDiv("clickable-icon view-action");
     this.readingButtonEl.addEventListener("click", () => this.toggleReadingView());
     this.updateModeButton();
-    const content = this.containerEl.createDiv("view-content");
+    const content = (this.contentEl = this.containerEl.createDiv("view-content"));
     this.emptyEl = content.createDiv("empty-state");
     this.renderEmptyState();
     this.sourceViewEl = content.createDiv("markdown-source-view mod-cm6");
@@ -117,6 +122,7 @@ export class MarkdownEditor {
       parent: this.sourceViewEl,
       state: this.createState(""),
     });
+    this.editor = new Editor(this.view);
     this.readingEl = content.createDiv("markdown-reading-view");
     this.showEmpty(true);
 
@@ -222,7 +228,7 @@ export class MarkdownEditor {
         syntaxHighlighting(obsidianHighlight),
         this.mode.of(this.modeExtension()),
         this.title.of(this.titleExtension()),
-        editorInfoField.init(() => ({ app: this.app, file: this.file })),
+        editorInfoField.init(() => ({ app: this.app, file: this.file, editor: this.editor })),
         editorLivePreviewField.init(() => this.isLivePreview()),
         livePreviewState,
         this.pluginExtensions.of(this.app.workspace.getEditorExtensions()),

@@ -155,6 +155,25 @@ export class MetadataCache extends Events {
     return this.cache.get(path)?.meta ?? null;
   }
 
+  /**
+   * Ob `path` unter Obsidians „Ausgeschlossene Dateien“ fällt (`userIgnoreFilters` in `app.json`):
+   * Pfadanfänge wie `Archiv/` oder reguläre Ausdrücke in `/…/`.
+   */
+  isUserIgnored(path: string): boolean {
+    const filters = this.vault.getConfig("userIgnoreFilters");
+    if (!Array.isArray(filters)) return false;
+    return filters.some((filter) => {
+      if (typeof filter !== "string" || !filter) return false;
+      const regex = /^\/(.+)\/$/.exec(filter);
+      if (!regex) return path.startsWith(filter);
+      try {
+        return new RegExp(regex[1]).test(path);
+      } catch {
+        return false;
+      }
+    });
+  }
+
   /** Alle Links einer Datei, inkl. Embeds und Frontmatter-Links. */
   private references(path: string): { link: string }[] {
     const meta = this.getCache(path);

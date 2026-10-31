@@ -48,6 +48,8 @@ declare global {
     hide(): void;
     toggle(show: boolean): void;
     isShown(): boolean;
+    /** Unsichtbar machen, ohne den Platz freizugeben (`visibility`). */
+    toggleVisibility(visible: boolean): void;
   }
   function createEl<K extends keyof HTMLElementTagNameMap>(
     tag: K,
@@ -161,6 +163,9 @@ export function installDomExtensions() {
   };
   html.isShown = function () {
     return this.style.display !== "none" && this.isConnected;
+  };
+  html.toggleVisibility = function (visible) {
+    this.style.visibility = visible ? "" : "hidden";
   };
 
   const g = globalThis as any;

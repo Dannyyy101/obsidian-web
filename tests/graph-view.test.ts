@@ -6,6 +6,7 @@ import { IndexedAdapter } from "../src/storage/indexed-adapter";
 import { MemoryBackend, MemoryTimesStore } from "../src/storage/memory-backend";
 import { installDomExtensions } from "../src/ui/dom";
 import { GRAPH_VIEW_TYPE } from "../src/ui/views/graph-view";
+import { MarkdownView } from "../src/ui/markdown-view";
 
 let counter = 0;
 
@@ -43,7 +44,7 @@ describe("Graph-Ansicht", () => {
     const { app, vault, titles } = await setup();
     const leaf = app.workspace.openView(GRAPH_VIEW_TYPE)!;
     await leaf.openFile(vault.getFileByPath("B.md")!);
-    expect(leaf.view).toBeNull();
+    expect(leaf.view).toBeInstanceOf(MarkdownView);
     expect(titles()).toEqual(["B"]);
     expect(app.workspace.getActiveFile()?.path).toBe("B.md");
   });
