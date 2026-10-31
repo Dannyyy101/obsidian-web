@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
-import { foldedRanges } from "@codemirror/language";
+import { ensureSyntaxTree, foldedRanges } from "@codemirror/language";
 import { EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -13,10 +13,13 @@ const DOC = ["# Eins", "Text", "## Zwei", "- a", "\t- b", "\t- c", "- d", "", "#
 function editor(doc: string, config = { foldHeading: true, foldIndent: true }) {
   const parent = document.createElement("div");
   document.body.appendChild(parent);
-  return new EditorView({
+  const view = new EditorView({
     parent,
     state: EditorState.create({ doc, extensions: [markdown({ base: markdownLanguage, extensions: obsidianLezerExtensions }), folding(config)] }),
   });
+  // Unter Last parst CodeMirror nicht alles sofort; die Tests brauchen den ganzen Baum.
+  ensureSyntaxTree(view.state, doc.length, 5000);
+  return view;
 }
 
 const line = (view: EditorView, n: number) => view.state.doc.line(n);
