@@ -118,7 +118,7 @@ für den Rest vor.
 | Autovervollständigung für `[[Links]]` und `#Tags` | ✅ Dateien, Aliasse, `#Überschrift`, `#^Block`; noch ohne `[[##` (vaultweit), nicht verlinkte Ziele und Tags im Frontmatter |
 | Klammern und Markdown-Zeichen automatisch schließen | ✅ `autoPairBrackets`, `autoPairMarkdown` aus `app.json` |
 | Bilder einfügen/ablegen (Ablage nach `attachmentFolderPath`) | ✅ Auch andere Dateien per Drag & Drop; `useMarkdownLinks` wird beachtet |
-| Syntax-Highlighting in Codeblöcken, Kopieren-Knopf | ⬜ |
+| Syntax-Highlighting in Codeblöcken, Kopieren-Knopf | ✅ Sprachen aus `@codemirror/language-data`, im Lesemodus mit Prism-Klassen (`.token.keyword`) |
 | Überschriften und Listen einklappen | ⬜ |
 | Suchen & Ersetzen in der Notiz (eigene Oberfläche) | ⬜ |
 | Kontextmenü im Editor, Formatierungsbefehle (fett, Link …) | ⬜ |
