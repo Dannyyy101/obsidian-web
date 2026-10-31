@@ -1,4 +1,4 @@
-import { activeEditor, activeView, expect, expectOpen, openFromExplorer, test } from "./fixtures";
+import { activeEditor, activeView, expect, expectOpen, openFromExplorer, readVaultFile, test } from "./fixtures";
 
 test("Live Preview rendert Callouts, Links und Aufgaben", async ({ vault: page }) => {
   await openFromExplorer(page, "Willkommen.md");
@@ -26,4 +26,23 @@ test("Lesemodus rendert die Notiz und schaltet zurück", async ({ vault: page })
   await page.keyboard.press("ControlOrMeta+E");
   await expect(reading).toBeHidden();
   await expect(activeEditor(page)).toBeVisible();
+});
+
+test("Enter setzt Listen fort, Tab rückt ein, Enter auf leerem Punkt beendet die Liste", async ({ vault: page, vaultName }) => {
+  await openFromExplorer(page, "Projekte/Plan.md");
+  await activeEditor(page).click();
+  await page.keyboard.press("ControlOrMeta+End");
+  await page.keyboard.press("Enter");
+  await page.keyboard.type("- [ ] eins");
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Tab");
+  await page.keyboard.type("zwei");
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Enter");
+  await page.keyboard.type("Ende");
+
+  await expect
+    .poll(() => readVaultFile(page, vaultName, "Projekte/Plan.md"), { timeout: 10_000 })
+    .toContain("\n- [ ] eins\n\t- [ ] zwei\nEnde");
 });

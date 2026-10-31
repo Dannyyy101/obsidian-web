@@ -1,6 +1,6 @@
 # obsidian-web – Roadmap
 
-Stand: 2026-10-31 · Grundlage: Code im Repository (Typecheck grün, 91 Unit-Tests und 14 E2E-Tests in Chromium, Firefox und WebKit grün)
+Stand: 2026-10-31 · Grundlage: Code im Repository (Typecheck grün, 111 Unit-Tests und 15 E2E-Tests in Chromium, Firefox und WebKit grün)
 
 Ziel ist eine vollständige Abbildung von Obsidian im Browser (siehe `docs/KONZEPT.md`). Diese Datei
 zeigt, was davon umgesetzt ist, was nur teilweise geht und was fehlt, und schlägt eine Reihenfolge
@@ -107,7 +107,7 @@ für den Rest vor.
 
 | Feature | Status |
 |---|---|
-| Listen beim Enter fortsetzen, Einrücken/Ausrücken von Listen | ⬜ |
+| Listen beim Enter fortsetzen, Einrücken/Ausrücken von Listen | ✅ `useTab`, `tabSize`, `smartIndentList` aus `app.json`; beim Einrücken wird eine nummerierte Liste noch nicht neu bei 1 begonnen |
 | Autovervollständigung für `[[Links]]` und `#Tags` | ⬜ |
 | Klammern und Markdown-Zeichen automatisch schließen | ⬜ |
 | Bilder einfügen/ablegen (Ablage nach `attachmentFolderPath`) | ⬜ |
@@ -181,7 +181,7 @@ Die Reihenfolge richtet sich nach dem Nutzen im Alltag. Jede Stufe ist für sich
 | Stufe | Inhalt | Warum jetzt |
 |---|---|---|
 | **A – Abnahme** | ~~CI~~, ~~E2E-Grundgerüst mit Kernabläufen~~, weitere E2E-Tests, manuelle Prüfung in drei Browsern | Viele Features sind nur automatisiert getestet. Fehler im echten Browser sollten auffallen, bevor mehr darauf aufbaut. Die ersten E2E-Tests haben bereits zwei Fehler gefunden (Firefox-Start, Inline-Titel). |
-| **B – Schreiben** | Listen fortsetzen, `[[`-Autovervollständigung, Bilder einfügen, Code-Highlighting, Formatierungsbefehle, Wortzählung | Betrifft jede Minute im Editor. |
+| **B – Schreiben** | ~~Listen fortsetzen~~, `[[`-Autovervollständigung, Bilder einfügen, Code-Highlighting, Formatierungsbefehle, Wortzählung | Betrifft jede Minute im Editor. |
 | **C – Organisieren** | Properties, Tags, Lesezeichen, Tagesnotizen, Vorlagen, Drag & Drop im Explorer, Seitenvorschau | Die meistgenutzten Core-Plugins nach Suche und Backlinks. |
 | **D – Anpassen** | Themes und Snippets, `hotkeys.json`, Plugin-Verwaltung, Plugin-API (Views, Editor, Post-Processor) | Öffnet den Weg für Community-Plugins. |
 | **E – Plattform** | PWA/Offline, lokale Ordner, ZIP-Import/-Export, mobiles Layout, Safari-Fallback | Macht die App unabhängig von einem einzelnen Browser-Profil. |
