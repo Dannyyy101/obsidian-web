@@ -5,7 +5,6 @@ import { renderEmbed } from "../render/embed";
 import { renderMarkdown } from "../render/markdown";
 import { renderMath } from "../render/math";
 import { renderMermaid } from "../render/mermaid";
-import { renderTable } from "../render/table";
 
 /** Öffnet den Link eines angeklickten `.internal-link`/`.external-link`. */
 export function followLink(el: HTMLElement, host: LivePreviewHost, evt: MouseEvent): boolean {
@@ -133,7 +132,7 @@ function widgetContext(host: LivePreviewHost): RenderContext {
 }
 
 /**
- * Gerenderter Block (Tabelle, Callout, Diagramm, Embed). Klick auf einen Link folgt ihm, Klick
+ * Gerenderter Block (Callout, Diagramm, Embed). Klick auf einen Link folgt ihm, Klick
  * auf Bedienelemente (Einklappen, Medien) wirkt dort; sonst springt der Cursor in die Quelle.
  */
 abstract class RenderedWidget extends WidgetType {
@@ -171,13 +170,6 @@ abstract class RenderedWidget extends WidgetType {
 
   ignoreEvent() {
     return true;
-  }
-}
-
-export class TableWidget extends RenderedWidget {
-  protected cls = "cm-table-widget";
-  protected render(el: HTMLElement) {
-    renderTable(this.source, el, widgetContext(this.host));
   }
 }
 

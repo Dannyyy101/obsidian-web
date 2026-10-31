@@ -21,8 +21,8 @@ import {
   LinkWidget,
   MathWidget,
   MermaidWidget,
-  TableWidget,
 } from "./widgets";
+import { TableEditorWidget } from "./table-editor";
 import { mathSource } from "../render/math";
 
 const hidden = Decoration.replace({});
@@ -335,7 +335,7 @@ function blockWidgetFor(state: EditorState, node: SyntaxNode, host: LivePreviewH
   const source = () => state.sliceDoc(state.doc.lineAt(node.from).from, state.doc.lineAt(node.to).to);
   switch (node.name) {
     case "Table":
-      return new TableWidget(source(), host);
+      return new TableEditorWidget(source(), host);
     case "BlockMath":
       return new MathWidget(mathSource(state.sliceDoc(node.from, node.to)).tex, true);
     case "Blockquote": {

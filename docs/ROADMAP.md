@@ -123,7 +123,7 @@ für den Rest vor.
 | Suchen & Ersetzen in der Notiz (eigene Oberfläche) | ⬜ |
 | Kontextmenü im Editor, Formatierungsbefehle (fett, Link …) | ⬜ |
 | Vim-Modus | ⬜ |
-| Tabellen-Editor in der Live Preview | ⬜ |
+| Tabellen-Editor in der Live Preview | ✅ Zellen direkt bearbeiten, Tab/Enter/Pfeile, „+“ für Zeile/Spalte, Kontextmenü (einfügen, löschen, ausrichten); ändert beim Tippen nur die Zelle in der Quelle |
 | Fußnoten rendern | ⬜ |
 
 ### Organisieren
