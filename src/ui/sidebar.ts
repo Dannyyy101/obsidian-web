@@ -81,6 +81,10 @@ export class Sidebar {
     this.save();
   }
 
+  getView(id: string): SidebarView | undefined {
+    return this.views.find((v) => v.id === id);
+  }
+
   isActive(id: string): boolean {
     return this.active?.id === id && !this.isCollapsed();
   }
