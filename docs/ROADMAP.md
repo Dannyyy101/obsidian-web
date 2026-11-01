@@ -114,7 +114,7 @@ E2E-Grundgerüst, Omnisearch, `hotkeys.json`, mobile Schubladen.
 | Kontextmenü, Formatierungsbefehle | ✅ | | ✓ | Befehls-IDs wie Obsidian, Untermenüs, Event `editor-menu` |
 | Vim-Modus | 🟡 | [#50] | ✓ | `vimMode`, `:w`, `:q`, `:wq`. Ohne `.obsidian.vimrc` |
 | Tabellen-Editor in der Live Preview | ✅ | | ✓ | Ändert beim Tippen nur die Zelle in der Quelle |
-| Wortzählung in der Statusleiste | ⬜ | A · [#19] | | |
+| Wortzählung in der Statusleiste | ✅ | A · [#19] | ✓ | Core-Plugin `word-count`; ohne Frontmatter, Kommentare und Syntax, Auswahl separat. Abschaltbar erst mit [#32] |
 | Typografie wie Obsidian, `appearance.json` (Schriften, Größe, Theme) | ✅ | | | |
 
 ### Markdown-Syntax (Live Preview, Lesemodus, Embeds)

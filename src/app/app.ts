@@ -1,4 +1,4 @@
-import type { ObsidianProtocolHandler } from "../api/plugin";
+import type { ObsidianProtocolHandler, Plugin } from "../api/plugin";
 import { PluginManager } from "../api/plugin-manager";
 import { Commands } from "../core/commands";
 import { FileManager } from "../core/file-manager";
@@ -26,6 +26,7 @@ import { eventModifiers, Keymap } from "../ui/keymap";
 import { Notice } from "../ui/notice";
 import { SettingsModal } from "../ui/settings-modal";
 import { coreSettingTabs } from "./core-settings";
+import { loadCorePlugins } from "../plugins";
 import { Workspace } from "../ui/workspace";
 
 /** Entspricht Obsidians `App`: hält alle Teile zusammen und ist für Plugins `this.app`. */
@@ -46,6 +47,8 @@ export class App {
   rightSidebar: Sidebar;
   searchView: SearchView;
   protocolHandlers = new Map<string, ObsidianProtocolHandler>();
+  /** Geladene Core-Plugins (`src/plugins/`). */
+  corePlugins: Plugin[];
   appId: string;
 
   constructor(
@@ -97,6 +100,7 @@ export class App {
       this.saveLocalStorage(App.RECENT_KEY, this.getRecentFiles().map((p) => (p === oldPath ? file.path : p)));
     });
     document.addEventListener("keydown", (evt) => this.handleHotkey(evt));
+    this.corePlugins = loadCorePlugins(this);
   }
 
   /** Editor des aktiven Tabs. */
