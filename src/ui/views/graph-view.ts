@@ -92,7 +92,7 @@ class GraphSettingsStore {
 /** Globale Graph-Ansicht als Tab, wie Obsidians Core-Plugin „Graph“. */
 export class GraphView implements LeafView {
   containerEl: HTMLElement;
-  private renderer: GraphRenderer;
+  readonly renderer: GraphRenderer;
   private store: GraphSettingsStore;
   private controlsEl: HTMLElement;
   private timer: number | undefined;
@@ -373,7 +373,7 @@ export class LocalGraphView extends IndexView {
   id = "localgraph";
   icon = "git-fork";
   title = "Lokaler Graph";
-  private renderer: GraphRenderer;
+  readonly renderer: GraphRenderer;
   private settings: LocalGraphSettings;
   private controlsEl: HTMLElement;
   private center: TFile | null = null;

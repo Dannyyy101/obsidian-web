@@ -94,6 +94,11 @@ export class GraphRenderer {
     this.colorProbeEl.detach();
   }
 
+  /** Angezeigte Knoten mit ihrer aktuellen Position */
+  get nodes(): readonly GraphNode[] {
+    return this.simulation.data.nodes;
+  }
+
   setData(data: GraphData): void {
     const previous = this.simulation.data;
     this.simulation.setData(data, previous);
@@ -184,7 +189,8 @@ export class GraphRenderer {
     this.panY = -((minY + maxY) / 2) * this.scale;
   }
 
-  private toScreen(x: number, y: number): [number, number] {
+  /** Weltkoordinaten → Pixel relativ zum Canvas */
+  toScreen(x: number, y: number): [number, number] {
     return [x * this.scale + this.panX + this.width / 2, y * this.scale + this.panY + this.height / 2];
   }
 
