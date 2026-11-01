@@ -32,6 +32,16 @@ export function mimeType(extension: string): string {
   return MIME[extension] ?? "application/octet-stream";
 }
 
+/**
+ * Anzeigbare URL für den Inhalt einer Vault-Datei; freigeben mit `URL.revokeObjectURL`. SVGs kommen
+ * als data:-URL, weil eine Blob-URL im Origin der App läuft: Öffnet man das Bild in einem eigenen
+ * Tab, hätten Skripte im SVG Zugriff auf den Vault. Ein data:-Dokument hat ein eigenes Origin.
+ */
+export function resourceUrl(data: ArrayBuffer, extension: string): string {
+  if (extension === "svg") return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(new TextDecoder().decode(data))}`;
+  return URL.createObjectURL(new Blob([data], { type: mimeType(extension) }));
+}
+
 export function extensionOf(path: string): string {
   const m = /\.([^./]+)$/.exec(path.split("#")[0]);
   return m ? m[1].toLowerCase() : "";

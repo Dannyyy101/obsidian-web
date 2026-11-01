@@ -13,7 +13,7 @@ services:
     build: ..
     restart: unless-stopped
     environment:
-      PROXY_ALLOWED_HOSTS: ${PROXY_ALLOWED_HOSTS:-}
+      PROXY_ALLOWED_HOSTS: ${PROXY_ALLOWED_HOSTS:?PROXY_ALLOWED_HOSTS in .env setzen, z. B. auf den S3- oder WebDAV-Host}
 
   oauth2-proxy:
     image: quay.io/oauth2-proxy/oauth2-proxy:v7.7.1

@@ -1,9 +1,9 @@
 import type { App } from "../app/app";
 import type { Component } from "../core/component";
-import { type LivePreviewHost, mimeType } from "../editor/live-preview/host";
+import { type LivePreviewHost, resourceUrl } from "../editor/live-preview/host";
 import { renderMarkdown } from "../editor/render/markdown";
 
-/** Linkauflösung, Embeds und Vault-Ressourcen für gerendertes Markdown; Blob-URLs leben so lange wie `component`. */
+/** Linkauflösung, Embeds und Vault-Ressourcen für gerendertes Markdown; deren URLs leben so lange wie `component`. */
 function renderHost(app: App, component: Component): LivePreviewHost {
   const urls: string[] = [];
   component.register(() => urls.forEach((url) => URL.revokeObjectURL(url)));
@@ -14,7 +14,7 @@ function renderHost(app: App, component: Component): LivePreviewHost {
     loadResource: async (linkpath, sourcePath) => {
       const file = resolve(linkpath, sourcePath);
       if (!file) return null;
-      const url = URL.createObjectURL(new Blob([await app.vault.readBinary(file)], { type: mimeType(file.extension) }));
+      const url = resourceUrl(await app.vault.readBinary(file), file.extension);
       urls.push(url);
       return url;
     },
@@ -37,10 +37,22 @@ export class MarkdownRenderer {
   }
 }
 
-const FORBIDDEN_TAGS = new Set(["SCRIPT", "STYLE", "IFRAME", "OBJECT", "EMBED", "LINK", "META", "BASE", "FORM", "FRAME", "FRAMESET"]);
+// SVG-Animationen können `href` nachträglich auf `javascript:` setzen.
+const FORBIDDEN_TAGS = new Set([
+  "SCRIPT", "STYLE", "IFRAME", "OBJECT", "EMBED", "LINK", "META", "BASE", "FORM", "FRAME", "FRAMESET",
+  "ANIMATE", "SET", "ANIMATEMOTION", "ANIMATETRANSFORM", "HANDLER",
+]);
 const URL_ATTRS = new Set(["href", "src", "xlink:href", "action", "formaction"]);
+const SAFE_PROTOCOLS = new Set(["http", "https", "mailto", "tel", "obsidian"]);
 
-/** Entspricht Obsidians `sanitizeHTMLToDom`: HTML ohne Skripte, Event-Handler und `javascript:`-URLs. */
+/** URL ohne Schema (relativ, `#anker`) oder mit einem Schema aus `SAFE_PROTOCOLS`. */
+function isSafeUrl(value: string): boolean {
+  // Wie der URL-Parser des Browsers: Steuerzeichen und Leerzeichen zählen nicht, `jav\tascript:` ist `javascript:`.
+  const scheme = /^([^:/?#]*):/.exec(value.replace(/[\u0000- ]/g, ""))?.[1];
+  return scheme === undefined || SAFE_PROTOCOLS.has(scheme.toLowerCase());
+}
+
+/** Entspricht Obsidians `sanitizeHTMLToDom`: HTML ohne Skripte, Event-Handler und unsichere URLs. */
 export function sanitizeHTMLToDom(html: string): DocumentFragment {
   const template = document.createElement("template");
   template.innerHTML = html;
@@ -51,9 +63,7 @@ export function sanitizeHTMLToDom(html: string): DocumentFragment {
     }
     for (const attr of Array.from(el.attributes)) {
       const name = attr.name.toLowerCase();
-      if (name.startsWith("on") || (URL_ATTRS.has(name) && /^\s*(javascript|vbscript|data):/i.test(attr.value))) {
-        el.removeAttribute(attr.name);
-      }
+      if (name.startsWith("on") || (URL_ATTRS.has(name) && !isSafeUrl(attr.value))) el.removeAttribute(attr.name);
     }
   }
   return template.content;

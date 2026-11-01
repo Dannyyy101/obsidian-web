@@ -210,7 +210,8 @@ Obsidian Desktop öffnen, und es gibt keine Unterschiede, Fehler oder kaputten L
 1. **Server-Komponente:** Entschieden für Self-Hosting. Der Sync braucht einen CORS-Proxy
    (Abschnitt 8). In Produktion liefert `server/prod.ts` (Node ohne Abhängigkeiten) `dist/` aus und
    stellt `/__proxy` bereit. Weil der Proxy offen ist, läuft er nur hinter einer Anmeldung
-   (oauth2-proxy mit OIDC, siehe `deploy/`). `PROXY_ALLOWED_HOSTS` beschränkt optional die Ziele.
+   (oauth2-proxy mit OIDC, siehe `deploy/`). `PROXY_ALLOWED_HOSTS` legt die erlaubten Ziele fest (auch für Weiterleitungen); ohne die Variable
+   startet der Server nicht, `*` erlaubt bewusst alle Hosts.
 2. **Browser-Ziel:** Entschieden für OPFS als primären Speicher, weil er überall ohne
    Berechtigungsdialog läuft und der Sync die Vault-Quelle ist. `FsAccessAdapter` für echte lokale
    Ordner folgt später als Option für Chromium.

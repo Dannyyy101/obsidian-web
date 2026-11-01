@@ -14,6 +14,8 @@ const DROP_REQUEST_HEADERS = new Set(["host", "connection", "content-length", "t
 const DROP_RESPONSE_HEADERS = new Set([
   "content-encoding", "content-length", "transfer-encoding", "connection", "set-cookie",
 ]);
+const REDIRECT_STATUS = new Set([301, 302, 303, 307, 308]);
+const MAX_REDIRECTS = 20;
 
 async function readBody(req: IncomingMessage): Promise<Uint8Array<ArrayBuffer> | undefined> {
   const chunks: Buffer[] = [];
@@ -21,9 +23,18 @@ async function readBody(req: IncomingMessage): Promise<Uint8Array<ArrayBuffer> |
   return chunks.length ? new Uint8Array(Buffer.concat(chunks)) : undefined;
 }
 
-export async function handleProxyRequest(req: IncomingMessage, res: ServerResponse) {
+/** Leere Liste bedeutet: alle Hosts erlaubt. */
+function isAllowed(url: URL, allowedHosts: string[]) {
+  return !allowedHosts.length || allowedHosts.includes(url.hostname.toLowerCase());
+}
+
+/**
+ * Führt den Request aus und folgt Weiterleitungen selbst, damit `allowedHosts` auch für jedes
+ * Weiterleitungsziel gilt. Sonst käme man über einen Redirect an jeden Host im internen Netz.
+ */
+export async function handleProxyRequest(req: IncomingMessage, res: ServerResponse, allowedHosts: string[] = []) {
   const target = req.headers[TARGET_HEADER];
-  if (typeof target !== "string" || !/^https?:\/\//.test(target)) {
+  if (typeof target !== "string" || !/^https?:\/\//.test(target) || !URL.canParse(target)) {
     res.statusCode = 400;
     res.end(`missing or invalid ${TARGET_HEADER} header`);
     return;
@@ -42,13 +53,33 @@ export async function handleProxyRequest(req: IncomingMessage, res: ServerRespon
     return;
   }
 
+  let url = new URL(target);
+  let method = req.method ?? "GET";
+  let body = method === "GET" || method === "HEAD" ? undefined : await readBody(req);
   try {
-    const upstream = await fetch(target, {
-      method: req.method,
-      headers,
-      body: req.method === "GET" || req.method === "HEAD" ? undefined : await readBody(req),
-      redirect: "follow",
-    });
+    let upstream: Response;
+    for (let redirects = 0; ; redirects++) {
+      if (!isAllowed(url, allowedHosts)) {
+        res.statusCode = 403;
+        res.end(`proxy target not allowed: ${url.hostname} (PROXY_ALLOWED_HOSTS)`);
+        return;
+      }
+      upstream = await fetch(url, { method, headers, body, redirect: "manual" });
+      const location = upstream.headers.get("location");
+      if (!REDIRECT_STATUS.has(upstream.status) || location === null) break;
+      await upstream.body?.cancel();
+      if (redirects === MAX_REDIRECTS) throw new Error("too many redirects");
+      const next = new URL(location, url);
+      if (next.protocol !== "http:" && next.protocol !== "https:") throw new Error(`redirect to ${next.protocol} not allowed`);
+      // Wie fetch: 303 und POST bei 301/302 werden zu GET ohne Body, Zugangsdaten nur an dasselbe Origin.
+      if ((upstream.status === 303 && method !== "HEAD") || (upstream.status <= 302 && method === "POST")) {
+        method = "GET";
+        body = undefined;
+        headers.delete("content-type");
+      }
+      if (next.origin !== url.origin) headers.delete("authorization");
+      url = next;
+    }
     res.statusCode = upstream.status;
     upstream.headers.forEach((value, key) => {
       if (!DROP_RESPONSE_HEADERS.has(key)) res.setHeader(key, value);
