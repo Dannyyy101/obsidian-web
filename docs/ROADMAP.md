@@ -195,7 +195,7 @@ E2E-Grundgerüst, Omnisearch, `hotkeys.json`, mobile Schubladen.
 | CI (Typecheck, Tests, Build, E2E bei jedem Push und PR) | ✅ | | | |
 | E2E-Tests mit Playwright in Chromium, Firefox, WebKit | 🟡 | A · [#15], [#16] | | Es fehlen Kontextmenüs und Sync |
 | ESLint mit Schichtgrenzen (laut Konzept) | ✅ | A · [#17] | | `pnpm lint` in CI und Pre-push-Hook, prüft auch `window`/`document` in den Worker-Schichten |
-| Fixture-Vault aus Obsidian Desktop für Kompatibilitätstests | ⬜ | A · [#18] | | `e2e/fixtures/vault/` ist von Hand geschrieben |
+| Fixture-Vault aus Obsidian Desktop für Kompatibilitätstests | ✅ | A · [#18] | ✓ | `.obsidian/*.json` und `Welcome.md` stammen aus Obsidian Desktop, die übrigen Notizen sind für die Tests ergänzt |
 | Manuelle Abnahme in Chrome, Firefox und Safari | ⬜ | A · [#11] | | Danach als Release-Gate je Stufe |
 
 ### Bewusst nicht geplant
