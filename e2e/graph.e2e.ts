@@ -11,7 +11,7 @@ interface GraphRenderer {
   nodes: GraphNode[];
   focusedId: string | null;
   nodeColor(node: GraphNode): string | null;
-  simulation: { isRunning(): boolean };
+  simulation: { alpha: number };
   toScreen(x: number, y: number): [number, number];
 }
 interface GraphWindow {
@@ -40,11 +40,14 @@ function graphNodes(page: Page, which: Which) {
 
 const ids = async (page: Page, which: Which) => (await graphNodes(page, which)).map((n) => n.id);
 
-/** Wartet, bis das Layout steht, und klickt dann auf den Knoten `id`. */
+/**
+ * Hält das Layout an und klickt auf den Knoten `id`. Auf das natürliche Ende der Simulation zu warten
+ * dauert auf langsamen CI-Runnern zu lange (ein Tick je Frame), und solange sie läuft, wandern Knoten.
+ */
 async function clickNode(page: Page, id: string) {
-  await expect.poll(() => page.evaluate(() => (window as unknown as GraphWindow).app.workspace.getLeavesOfType("graph")[0].view.renderer.simulation.isRunning()), { timeout: 15_000 }).toBe(false);
   const point = await page.evaluate((id) => {
     const { renderer } = (window as unknown as GraphWindow).app.workspace.getLeavesOfType("graph")[0].view;
+    renderer.simulation.alpha = 0;
     const node = renderer.nodes.find((n) => n.id.normalize("NFC") === id)!;
     const [x, y] = renderer.toScreen(node.x, node.y);
     const rect = renderer.canvas.getBoundingClientRect();
