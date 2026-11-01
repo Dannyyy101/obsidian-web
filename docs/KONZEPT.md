@@ -137,7 +137,8 @@ etwa der Graph (WebGL über `pixi.js` oder `sigma.js`) oder Canvas.
 Ein Modul `obsidian` stellt die API aus `obsidian.d.ts` bereit. Plugins werden aus
 `.obsidian/plugins/<id>/main.js` geladen und mit einem CommonJS-Wrapper ausgeführt, der
 `require('obsidian')` auf den Shim umleitet. Plugins, die `isDesktopOnly: true` setzen oder
-Node-Module brauchen, werden markiert und nicht geladen.
+Node-Module brauchen, werden markiert und nicht geladen. `syntaxTree` liefert Plugins im
+Markdown-Editor Obsidians HyperMD-Knotennamen (siehe `docs/adr/0001-hypermd-syntaxbaum-fuer-plugins.md`).
 
 ## 4. Tech-Stack
 

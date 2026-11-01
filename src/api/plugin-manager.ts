@@ -1,6 +1,5 @@
 import * as autocomplete from "@codemirror/autocomplete";
 import * as commands from "@codemirror/commands";
-import * as language from "@codemirror/language";
 import * as lint from "@codemirror/lint";
 import * as search from "@codemirror/search";
 import * as state from "@codemirror/state";
@@ -12,6 +11,7 @@ import i18next from "i18next";
 import moment from "moment";
 import type { App } from "../app/app";
 import { Notice } from "../ui/notice";
+import { pluginLanguageModule } from "./hypermd-tree";
 import * as obsidian from "./obsidian";
 import type { Plugin, PluginManifest } from "./plugin";
 
@@ -22,12 +22,13 @@ const PLUGIN_FILES = ["manifest.json", "main.js", "styles.css"];
 /**
  * Module, die Obsidian Plugins per `require` bereitstellt. CodeMirror und Lezer müssen dieselben
  * Instanzen wie im Editor sein, sonst erkennt CodeMirror die Erweiterungen der Plugins nicht.
+ * Nur `syntaxTree` ist ersetzt und liefert Obsidians Knotennamen (siehe `hypermd-tree.ts`).
  */
 const MODULES: Record<string, unknown> = {
   obsidian,
   "@codemirror/autocomplete": autocomplete,
   "@codemirror/commands": commands,
-  "@codemirror/language": language,
+  "@codemirror/language": pluginLanguageModule,
   "@codemirror/lint": lint,
   "@codemirror/search": search,
   "@codemirror/state": state,
