@@ -466,6 +466,10 @@ textarea {
   min-height: 24px;
 }
 
+.status-bar-item-segment:not(:last-child) {
+  margin-inline-end: var(--size-4-2);
+}
+
 /* --- Tabs ------------------------------------------------------------------------------------ */
 
 .workspace-tabs {
