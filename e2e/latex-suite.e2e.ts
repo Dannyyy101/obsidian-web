@@ -23,10 +23,16 @@ test("Latex Suite expandiert Snippets und zeigt die Formelvorschau", async ({ pa
   await expectOpen(page, "Formeln.md");
 
   const editor = activeEditor(page);
-  await editor.locator(".cm-line").last().click();
   // `${}…{}$` statt `$…$` ist Absicht von Latex Suite (kein Flackern beim Tippen von Leerzeichen).
-  await page.keyboard.type("Sei mk");
-  await expect(editor).toContainText("Sei ${}{}$");
+  // Latex Suite lädt in `onload` erst MathJax und registriert danach seine Editor-Erweiterung. Unter
+  // Last ist der Editor schon vorher offen, deshalb bis dahin neu tippen.
+  await expect(async () => {
+    await editor.click();
+    await page.keyboard.press("ControlOrMeta+A");
+    await page.keyboard.press("Backspace");
+    await page.keyboard.type("Sei mk");
+    await expect(editor).toContainText("Sei ${}{}$", { timeout: 500 });
+  }).toPass();
   await page.keyboard.type("//");
   await page.keyboard.type("1");
   await page.keyboard.press("Tab");

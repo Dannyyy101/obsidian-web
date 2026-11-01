@@ -12,7 +12,8 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "fetch-plugins": "node scripts/fetch-plugins.mjs",
-    "postinstall": "node scripts/fetch-plugins.mjs"
+    "postinstall": "node scripts/fetch-plugins.mjs",
+    "prepare": "git config core.hooksPath .githooks || true"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.20.4",

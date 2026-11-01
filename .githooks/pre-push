@@ -1,0 +1,7 @@
+#!/bin/sh
+# Führt vor jedem Push alle Prüfungen wie in der CI aus. Überspringen mit `git push --no-verify`.
+set -e
+
+pnpm typecheck
+pnpm test
+pnpm test:e2e
