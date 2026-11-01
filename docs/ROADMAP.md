@@ -124,7 +124,7 @@ E2E-Grundgerüst, Omnisearch, `hotkeys.json`, mobile Schubladen.
 | Überschriften, Formatierung, `==Highlight==`, `%%Kommentare%%`, Tags | ✅ | | | |
 | Listen mit hängendem Einzug, Aufgaben mit Checkbox | ✅ | | ✓ | |
 | Links, Wikilinks mit Abschnitt/Alias, fehlende Ziele erkennbar | ✅ | | ✓ | |
-| Embeds: Notizen, Abschnitte, Blöcke, Bilder, Audio, Video, PDF | ✅ | A · [#14] | 🟡 | E2E nur für eingefügte Bilder |
+| Embeds: Notizen, Abschnitte, Blöcke, Bilder, Audio, Video, PDF | ✅ | | ✓ | |
 | Callouts mit Typen, Icons, Einklappen, Verschachtelung | ✅ | | ✓ | |
 | Tabellen, Codeblöcke, Trennlinien | ✅ | | ✓ | |
 | Fußnoten (`[^1]`, `^[inline]`) | ✅ | | ✓ | |
@@ -193,7 +193,7 @@ E2E-Grundgerüst, Omnisearch, `hotkeys.json`, mobile Schubladen.
 | Feature | Status | Stufe | E2E | Anmerkung |
 |---|---|---|---|---|
 | CI (Typecheck, Tests, Build, E2E bei jedem Push und PR) | ✅ | | | |
-| E2E-Tests mit Playwright in Chromium, Firefox, WebKit | 🟡 | A · [#14], [#15], [#16] | | Es fehlen Embeds, Kontextmenüs und Sync |
+| E2E-Tests mit Playwright in Chromium, Firefox, WebKit | 🟡 | A · [#15], [#16] | | Es fehlen Kontextmenüs und Sync |
 | ESLint mit Schichtgrenzen (laut Konzept) | ✅ | A · [#17] | | `pnpm lint` in CI und Pre-push-Hook, prüft auch `window`/`document` in den Worker-Schichten |
 | Fixture-Vault aus Obsidian Desktop für Kompatibilitätstests | ⬜ | A · [#18] | | `e2e/fixtures/vault/` ist von Hand geschrieben |
 | Manuelle Abnahme in Chrome, Firefox und Safari | ⬜ | A · [#11] | | Danach als Release-Gate je Stufe |
