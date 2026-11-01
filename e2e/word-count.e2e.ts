@@ -4,6 +4,9 @@ test("Statusleiste zählt Wörter und Zeichen der Notiz und der Auswahl", async 
   const count = page.locator(".status-bar .plugin-word-count");
   await openFromExplorer(page, "Projekte/Plan.md");
   await expect(count).toHaveText("9 Wörter60 Zeichen");
+  // Die Segmente stehen nebeneinander, mit Abstand dazwischen.
+  const [words, characters] = await count.locator(".status-bar-item-segment").evaluateAll((els) => els.map((el) => el.getBoundingClientRect()));
+  expect(characters.left - words.right).toBeGreaterThan(4);
 
   await activeEditor(page).click();
   await page.keyboard.press("ControlOrMeta+End");
