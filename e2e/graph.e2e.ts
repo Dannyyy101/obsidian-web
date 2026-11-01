@@ -56,13 +56,15 @@ async function clickNode(page: Page, id: string) {
   await page.mouse.click(point.x, point.y);
 }
 
-const ALL_NOTES = ["Projekte/Plan.md", "Projekte/Übersicht.md", "Willkommen.md"];
+const NOTES = ["Projekte/Plan.md", "Projekte/Übersicht.md", "Willkommen.md"];
+/** Dazu kommt Obsidians `Welcome.md` mit ihrem nicht aufgelösten Link (`hideUnresolved: false` aus graph.json). */
+const ALL_NOTES = ["Projekte/Plan.md", "Projekte/Übersicht.md", "Welcome.md", "Willkommen.md", "unresolved:create a link"];
 
 test("globaler Graph öffnet als Tab, zeigt alle Notizen und öffnet sie per Klick", async ({ vault: page }) => {
   await page.locator('.side-dock-ribbon [aria-label="Graph-Ansicht öffnen"]').click();
   await expect(page.locator(".mod-root .workspace-tab-header.is-active")).toHaveAttribute("aria-label", "Graph");
   await expect(page.locator('.mod-root .workspace-leaf-content[data-type="graph"] canvas')).toBeVisible();
-  // Standard ohne graph.json: nur Notizen, keine Tags.
+  // graph.json aus Obsidian Desktop: nur Notizen, keine Tags.
   await expect.poll(() => ids(page, "global")).toEqual(ALL_NOTES);
 
   // Der Graph bleibt offen, die Notiz öffnet sich in einem neuen Tab.
@@ -89,7 +91,7 @@ test("lokaler Graph folgt der aktiven Notiz", async ({ vault: page }) => {
 
   // Tiefe 1 aus Sicht von Willkommen: beide verlinkten Notizen.
   await openFromExplorer(page, "Willkommen.md");
-  await expect.poll(() => ids(page, "local")).toEqual(ALL_NOTES);
+  await expect.poll(() => ids(page, "local")).toEqual(NOTES);
 });
 
 test("Einstellungen aus graph.json wirken und werden beim Ändern zurückgeschrieben", async ({ page, vaultName }) => {
@@ -114,7 +116,7 @@ test("Einstellungen aus graph.json wirken und werden beim Ändern zurückgeschri
   const controls = page.locator(".mod-root .graph-controls");
   await expect(controls.locator(".mod-search-setting input")).toHaveValue("path:Projekte");
 
-  // Suche leeren und Tags einblenden: Willkommen und sein Tag kommen dazu.
+  // Suche leeren und Tags einblenden: die übrigen Notizen und der Tag von Willkommen kommen dazu.
   await controls.locator(".mod-search-setting input").fill("");
   await controls.locator(".setting-item", { hasText: "Tags" }).locator(".checkbox-container").click();
   await expect.poll(() => ids(page, "global")).toEqual(["#start", ...ALL_NOTES]);
