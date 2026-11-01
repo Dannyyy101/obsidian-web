@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "start": "node server/prod.ts",
     "typecheck": "tsc --noEmit",
+    "lint": "tools/eslint/node_modules/.bin/eslint src",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "fetch-plugins": "node scripts/fetch-plugins.mjs",

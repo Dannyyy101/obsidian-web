@@ -41,7 +41,7 @@ Das ausführliche Konzept steht in `docs/KONZEPT.md`. Lies es, bevor du größer
   Branch.
 - **Parallele Sitzungen** arbeiten in eigenen Worktrees (`git worktree add ../obsidian-web-<kurzname>
   -b feature/<kurzname>`), damit sie sich nicht gegenseitig Dateien überschreiben.
-- **Vor dem Mergen** müssen `pnpm typecheck && pnpm test` grün sein. Gemergt wird erst nach Freigabe
+- **Vor dem Mergen** müssen `pnpm typecheck && pnpm lint && pnpm test` grün sein. Gemergt wird erst nach Freigabe
   durch den Nutzer.
 
 ## Projektkarte
@@ -146,13 +146,15 @@ pnpm dev             # Dev-Server inkl. CORS-Proxy (http://localhost:5173)
 pnpm test            # Vitest: Unit-Tests + remotely-save-Integrationstest
 pnpm test:e2e        # Playwright: E2E-Tests in Chromium, Firefox, WebKit (startet den Dev-Server selbst)
 pnpm typecheck       # tsc --noEmit
+pnpm lint            # ESLint: Schichtgrenzen und kein DOM in core/markdown/storage/shared
 pnpm build           # Typecheck + Produktions-Build
 pnpm fetch-plugins   # Plugins neu laden (--force überschreibt)
 ```
 
-Führe vor dem Abschluss einer Aufgabe `pnpm typecheck && pnpm test` aus, bei Änderungen an der
-Oberfläche auch `pnpm test:e2e`. Geplant, aber noch nicht eingerichtet: `pnpm lint` (ESLint mit
-Schichtgrenzen).
+Führe vor dem Abschluss einer Aufgabe `pnpm typecheck && pnpm lint && pnpm test` aus, bei Änderungen
+an der Oberfläche auch `pnpm test:e2e`. ESLint liegt mit eigenem TypeScript 6 im Workspace-Paket
+`tools/eslint/`, weil `@typescript-eslint/parser` die JS-API braucht, die TypeScript 7 nicht mehr hat.
+Die Regeln stehen in `tools/eslint/config.js`.
 
 ### E2E-Test schreiben
 

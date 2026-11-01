@@ -51,6 +51,8 @@ export class PluginManager {
     // Globals, die Obsidian für Plugins bereitstellt. Die Sprache steht wie in Obsidian im localStorage.
     if (!i18next.isInitialized) void i18next.init({ lng: localStorage.getItem("language") || "en", fallbackLng: "en", initAsync: false });
     Object.assign(window, { app, moment, i18next });
+    // `App` liegt eine Schicht über api/, deshalb kommt die Klasse erst hier ins Modul `obsidian`.
+    MODULES.obsidian = { ...obsidian, App: app.constructor };
   }
 
   private get pluginsDir() {

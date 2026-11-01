@@ -1,8 +1,8 @@
 import { App } from "./app/app";
 import { followSystemTheme, loadAppearance } from "./app/appearance";
+import { IdbMetadataStore } from "./core/idb-metadata-store";
 import { Vault } from "./core/vault";
 import { createWorkerParser } from "./core/worker/worker-parser";
-import { IdbMetadataStore } from "./storage/idb-metadata-store";
 import { IdbTimesStore } from "./storage/idb-times-store";
 import { IndexedAdapter } from "./storage/indexed-adapter";
 import { OpfsBackend } from "./storage/opfs-backend";

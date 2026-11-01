@@ -63,6 +63,12 @@ die in der Liste **unter** ihr stehen.
 └──────────────────────────────────────────────────────────┘
 ```
 
+Schichten im selben Block dürfen sich gegenseitig importieren. Core-Plugins importieren nur aus
+`api/`. Einzige Ausnahme nach oben ist der reine Typ-Import von `App` aus `app/app.ts`, den `api/`,
+`ui/` und `editor/` wie in `obsidian.d.ts` überall herumreichen; zur Laufzeit entsteht dadurch
+keine Abhängigkeit. `core/`, `markdown/`, `storage/` und `shared/` nutzen weder `window` noch
+`document`. `pnpm lint` prüft diese Regeln (`tools/eslint/config.js`).
+
 ### 3.1 storage – Speicher-Adapter
 
 Eine gemeinsame Schnittstelle `DataAdapter` mit `list`, `stat`, `read`, `readBinary`, `write`,

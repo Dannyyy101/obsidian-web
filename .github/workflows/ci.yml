@@ -1,4 +1,4 @@
-# Typecheck, Tests, Build und E2E-Tests bei jedem Pull Request. Auf main läuft nur noch der
+# Typecheck, Lint, Tests, Build und E2E-Tests bei jedem Pull Request. Auf main läuft nur noch der
 # Docker-Build, die Tests sind dort schon im PR gelaufen.
 name: CI
 
@@ -37,6 +37,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
+      - run: pnpm lint
       - run: pnpm test
       - run: pnpm exec vite build
 
