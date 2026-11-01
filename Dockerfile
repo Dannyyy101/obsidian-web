@@ -2,7 +2,8 @@
 FROM node:24-alpine AS build
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@10.4.1 --activate
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY tools/eslint/package.json ./tools/eslint/
 COPY scripts ./scripts
 RUN pnpm install --frozen-lockfile
 COPY . .

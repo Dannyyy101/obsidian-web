@@ -58,7 +58,7 @@ export class Component {
   }
 
   registerInterval(id: number): number {
-    this.register(() => window.clearInterval(id));
+    this.register(() => clearInterval(id));
     return id;
   }
 }

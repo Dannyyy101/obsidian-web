@@ -3,7 +3,7 @@
 import moment from "moment";
 import { loadKatex, renderMath as renderKatex } from "../editor/render/math";
 
-export { App } from "../app/app";
+export type { App } from "../app/app";
 export { Commands } from "../core/commands";
 export { Component } from "../core/component";
 export { FileManager } from "../core/file-manager";
@@ -41,6 +41,7 @@ export { Workspace } from "../ui/workspace";
 export { MarkdownRenderer, sanitizeHTMLToDom } from "./markdown-renderer";
 export { apiVersion, Platform, requireApiVersion } from "./platform";
 export { Plugin, PluginSettingTab, SettingTab } from "./plugin";
+export type { PluginManifest } from "./plugin";
 export { request, requestUrl } from "./request-url";
 export { moment };
 

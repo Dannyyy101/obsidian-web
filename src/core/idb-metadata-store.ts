@@ -1,4 +1,4 @@
-import type { MetadataStore, StoredMetadata } from "../core/metadata-cache";
+import type { MetadataStore, StoredMetadata } from "./metadata-cache";
 
 const DB_NAME = "obsidian-web-metadata";
 const STORE = "files";

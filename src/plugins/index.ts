@@ -1,5 +1,4 @@
-import type { App } from "../app/app";
-import type { Plugin, PluginManifest } from "../api/plugin";
+import type { App, Plugin, PluginManifest } from "../api/obsidian";
 import WordCountPlugin from "./word-count";
 
 /**
