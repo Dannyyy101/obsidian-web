@@ -1,4 +1,4 @@
-import { activeEditor, expect, openFromExplorer, readVaultFile, test } from "./fixtures";
+import { activeEditor, expect, openFromExplorer, readVaultFile, saveAndReadVaultFile, test } from "./fixtures";
 
 test("eingefügtes Bild landet als Anhang im Vault und wird eingebettet", async ({ vault: page, vaultName, browserName }) => {
   test.skip(browserName === "firefox", "Firefox ignoriert clipboardData in synthetischen Paste-Events");
@@ -12,7 +12,7 @@ test("eingefügtes Bild landet als Anhang im Vault und wird eingebettet", async 
   });
   await expect(page.locator('.nav-file-title[data-path^="Pasted image "]')).toBeVisible();
   await expect
-    .poll(() => readVaultFile(page, vaultName, "Projekte/Plan.md"), { timeout: 10_000 })
+    .poll(() => saveAndReadVaultFile(page, vaultName, "Projekte/Plan.md"))
     .toMatch(/!\[\[Pasted image \d{14}\.svg\]\]$/);
 });
 
@@ -25,5 +25,5 @@ test("abgelegte Datei behält ihren Namen", async ({ vault: page, vaultName }) =
     el.dispatchEvent(new DragEvent("drop", { dataTransfer: data, bubbles: true, cancelable: true, clientX: rect.left + 5, clientY: rect.bottom - 5 }));
   });
   await expect.poll(() => readVaultFile(page, vaultName, "Notizen.txt")).toBe("hallo");
-  await expect.poll(() => readVaultFile(page, vaultName, "Projekte/Plan.md"), { timeout: 10_000 }).toContain("![[Notizen.txt]]");
+  await expect.poll(() => saveAndReadVaultFile(page, vaultName, "Projekte/Plan.md")).toContain("![[Notizen.txt]]");
 });

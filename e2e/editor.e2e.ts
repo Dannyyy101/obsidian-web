@@ -1,4 +1,4 @@
-import { activeEditor, activeView, expect, expectOpen, openFromExplorer, readVaultFile, test } from "./fixtures";
+import { activeEditor, activeView, expect, expectOpen, openFromExplorer, saveAndReadVaultFile, test } from "./fixtures";
 
 test("Live Preview rendert Callouts, Links und Aufgaben", async ({ vault: page }) => {
   await openFromExplorer(page, "Willkommen.md");
@@ -43,7 +43,7 @@ test("Enter setzt Listen fort, Tab rückt ein, Enter auf leerem Punkt beendet di
   await page.keyboard.type("Ende");
 
   await expect
-    .poll(() => readVaultFile(page, vaultName, "Projekte/Plan.md"), { timeout: 10_000 })
+    .poll(() => saveAndReadVaultFile(page, vaultName, "Projekte/Plan.md"))
     .toContain("\n- [ ] eins\n\t- [ ] zwei\nEnde");
 });
 
@@ -60,7 +60,7 @@ test("[[ und # schlagen Notizen und Tags vor und fügen die Auswahl ein", async 
   await page.keyboard.press("Enter");
   await expect(suggestions).toHaveCount(0);
 
-  await expect.poll(() => readVaultFile(page, vaultName, "Projekte/Plan.md"), { timeout: 10_000 }).toContain(" [[Willkommen]] #start ");
+  await expect.poll(() => saveAndReadVaultFile(page, vaultName, "Projekte/Plan.md")).toContain(" [[Willkommen]] #start ");
 });
 
 test("Klammern schließen sich selbst, Formatierungszeichen umschließen die Auswahl", async ({ vault: page, vaultName }) => {
@@ -73,5 +73,5 @@ test("Klammern schließen sich selbst, Formatierungszeichen umschließen die Aus
   for (let i = 0; i < 4; i++) await page.keyboard.press("Shift+ArrowLeft");
   await page.keyboard.type("**");
 
-  await expect.poll(() => readVaultFile(page, vaultName, "Projekte/Plan.md"), { timeout: 10_000 }).toContain("(siehe [[Plan]]) **Wort**");
+  await expect.poll(() => saveAndReadVaultFile(page, vaultName, "Projekte/Plan.md")).toContain("(siehe [[Plan]]) **Wort**");
 });

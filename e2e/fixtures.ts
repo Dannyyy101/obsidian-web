@@ -66,6 +66,16 @@ export async function readVaultFile(page: Page, name: string, path: string): Pro
   );
 }
 
+/**
+ * Speichert die aktive Datei mit Strg/Cmd+S und liest dann `path` aus dem OPFS. Ohne das landen
+ * Änderungen erst nach dem Autosave (2 s) im OPFS. Für `expect.poll` gedacht: Jeder Versuch speichert
+ * erneut, so kommt auch Text mit, den der Editor erst verzögert einfügt (z. B. Links auf Anhänge).
+ */
+export async function saveAndReadVaultFile(page: Page, name: string, path: string): Promise<string | null> {
+  await page.keyboard.press("ControlOrMeta+S");
+  return readVaultFile(page, name, path);
+}
+
 /** Öffnet den Vault und wartet, bis der Datei-Explorer steht. */
 export async function openVault(page: Page, name: string) {
   await page.goto(`/?vault=${encodeURIComponent(name)}`);

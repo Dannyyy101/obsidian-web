@@ -9,6 +9,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
+  // Standard wäre die halbe Kernzahl, auf dem CI-Runner (4 vCPUs) also 2. Die Tests warten meist auf
+  // den Browser statt zu rechnen, da reichen die Kerne auch für 4.
+  workers: process.env.CI ? 4 : undefined,
   reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
   use: {
     baseURL: `http://localhost:${PORT}`,
