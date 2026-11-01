@@ -1,5 +1,5 @@
-// Obsidians DOM-Erweiterungen (createEl, empty, toggleClass …) als Prototyp-Methoden und Globals.
-// Community-Plugins setzen sie voraus.
+// Obsidian's DOM extensions (createEl, empty, toggleClass …) as prototype methods and globals.
+// Community plugins rely on them.
 import { installGlobalExtensions } from "../shared/globals";
 
 export interface DomElementInfo {
@@ -29,7 +29,7 @@ declare global {
     createDiv(o?: DomElementInfo | string, callback?: ElCallback<HTMLDivElement>): HTMLDivElement;
     createSpan(o?: DomElementInfo | string, callback?: ElCallback<HTMLSpanElement>): HTMLSpanElement;
     appendText(text: string): void;
-    /** Dokument bzw. Fenster, zu dem der Knoten gehört (Obsidian unterstützt mehrere Fenster). */
+    /** Document or window the node belongs to (Obsidian supports multiple windows). */
     readonly doc: Document;
     readonly win: Window;
   }
@@ -48,7 +48,7 @@ declare global {
     hide(): void;
     toggle(show: boolean): void;
     isShown(): boolean;
-    /** Unsichtbar machen, ohne den Platz freizugeben (`visibility`). */
+    /** Hide without giving up the space (`visibility`). */
     toggleVisibility(visible: boolean): void;
   }
   function createEl<K extends keyof HTMLElementTagNameMap>(
@@ -83,9 +83,10 @@ function createElement<K extends keyof HTMLElementTagNameMap>(
   callback?: ElCallback<HTMLElementTagNameMap[K]>,
   parent?: Node,
 ) {
-  const el = document.createElement(tag);
-  applyInfo(el, o);
   const target = parent ?? (typeof o === "object" ? o.parent : undefined);
+  // Like Obsidian: the element belongs to its parent's document, so popout windows get their own.
+  const el = (target?.ownerDocument ?? document).createElement(tag);
+  applyInfo(el, o);
   if (target) {
     if (typeof o === "object" && o.prepend) target.insertBefore(el, target.firstChild);
     else target.appendChild(el);
@@ -95,7 +96,7 @@ function createElement<K extends keyof HTMLElementTagNameMap>(
 }
 
 export function installDomExtensions() {
-  // Die Erweiterungen von String, Array, Math … gehören zur selben globalen Plugin-Umgebung.
+  // The extensions of String, Array, Math … belong to the same global plugin environment.
   installGlobalExtensions();
 
   const node = Node.prototype;
@@ -115,7 +116,7 @@ export function installDomExtensions() {
     return createElement("span", o, callback, this);
   };
   node.appendText = function (text) {
-    this.appendChild(document.createTextNode(text));
+    this.appendChild(this.doc.createTextNode(text));
   };
   Object.defineProperties(node, {
     doc: { configurable: true, get: function (this: Node) { return this.ownerDocument ?? document; } },
