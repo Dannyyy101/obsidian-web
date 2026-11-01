@@ -177,7 +177,7 @@ E2E-Grundgerüst, Omnisearch, `hotkeys.json`, mobile Schubladen.
 | `registerView`, `registerMarkdownPostProcessor`, `registerEditorSuggest` | ⬜ | C · [#35] | | Leere Stubs |
 | `Workspace` mit Splits und Seitenleisten-Leaves | ⬜ | E · [#45] | | Hängt an den Splits |
 | Omnisearch als unverändertes Original-Plugin | 🟡 | | ✓ | Index in IndexedDB. Ohne HTTP-API (braucht Node) und Text-Extractor (PDF/Bilder) |
-| Latex Suite als unverändertes Original-Plugin | 🟡 | [#52] | ✓ | Snippets lösen auch in Code aus, weil das Plugin Codeblöcke an Obsidians internen Knotennamen erkennt |
+| Latex Suite als unverändertes Original-Plugin | ✅ | [#52] | ✓ | Erkennt Code an Obsidians HyperMD-Knotennamen. `syntaxTree` liefert Plugins deshalb einen übersetzten Baum, bisher nur mit Codeblöcken und Inline-Code |
 
 ### Plattform
 

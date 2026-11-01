@@ -116,6 +116,34 @@ describe.skipIf(!hasPlugin)("Latex Suite in obsidian-web", () => {
     expect(view.state.doc.toString()).toBe("Sei ${}\\alpha^{2}{}$");
   });
 
+  it("expandiert keine Text- und Formel-Snippets in Codeblöcken", async () => {
+    const { view } = await setup();
+    view.dispatch({ changes: { from: 0, insert: "```js\n\n```\n" }, selection: { anchor: 6 } });
+    type(view, "mk @a");
+    expect(view.state.doc.toString()).toBe("```js\nmk @a\n```\n");
+    // Hinter dem Codeblock greifen die Snippets wieder.
+    view.dispatch({ selection: { anchor: view.state.doc.length } });
+    type(view, "mk");
+    expect(view.state.doc.toString()).toBe("```js\nmk @a\n```\n${}{}$");
+  });
+
+  it("erkennt Codeblöcke (Option c) und Inline-Code (Option C)", async () => {
+    const { view, plugin } = await setup();
+    plugin.settings.snippets = `[
+      {trigger: "cb", replacement: "BLOCK", options: "cA"},
+      {trigger: "ic", replacement: "INLINE", options: "CA"},
+    ]`;
+    // Zweites Argument: Snippets neu laden, wie nach einer Änderung im Einstellungsreiter.
+    await plugin.saveSettings(false, true);
+    view.dispatch({ changes: { from: 0, insert: "```js\n\n```\nText `` danach " }, selection: { anchor: 6 } });
+    type(view, "cb ic");
+    view.dispatch({ selection: { anchor: view.state.doc.toString().lastIndexOf("``") + 1 } });
+    type(view, "x ic cb");
+    view.dispatch({ selection: { anchor: view.state.doc.length } });
+    type(view, "cb ic");
+    expect(view.state.doc.toString()).toBe("```js\nBLOCK ic\n```\nText `x INLINE cb` danach cb ic");
+  });
+
   it("springt mit Tab zum nächsten Tabstop", async () => {
     const { view } = await setup();
     type(view, "mk//");
