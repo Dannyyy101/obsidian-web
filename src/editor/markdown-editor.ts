@@ -16,7 +16,6 @@ import { autoPair } from "./auto-pair";
 import { documentSearch } from "./document-search";
 import { Editor } from "./editor";
 import { showEditorMenu } from "./editor-menu";
-import { FORMATTING_COMMANDS } from "./formatting";
 import { editorInfoField, editorLivePreviewField, livePreviewState, setLivePreview } from "./fields";
 import { folding, restoreFolds } from "./folding";
 import { inlineTitle } from "./inline-title";
@@ -166,19 +165,17 @@ export class MarkdownEditor {
 
   /** Leerer Tab wie in Obsidian: Titel und die naheliegenden Aktionen. */
   private renderEmptyState() {
-    const mod = /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Strg+";
-    const alt = mod === "⌘" ? "⌥" : "Alt+";
     const container = this.emptyEl.createDiv("empty-state-container");
     container.createDiv({ cls: "empty-state-title", text: "Keine Datei geöffnet" });
     const actions = container.createDiv("empty-state-action-list");
-    const entries: [string, string, string][] = [
-      ["Neue Notiz anlegen", `${mod}${alt}N`, "file-explorer:new-file"],
-      ["Datei öffnen", `${mod}O`, "switcher:open"],
-      ["Tab schließen", `${mod}${alt}W`, "workspace:close"],
+    const entries: [string, string][] = [
+      ["Neue Notiz anlegen", "file-explorer:new-file"],
+      ["Datei öffnen", "switcher:open"],
+      ["Tab schließen", "workspace:close"],
     ];
-    for (const [label, hotkey, command] of entries) {
+    for (const [label, command] of entries) {
       const action = actions.createDiv({ cls: "empty-state-action", text: label });
-      action.createSpan({ cls: "empty-state-hotkey", text: hotkey });
+      action.createSpan({ cls: "empty-state-hotkey", text: this.app.hotkeyManager.printHotkeyForCommand(command) });
       action.addEventListener("click", () => this.app.commands.executeCommandById(command));
     }
   }
@@ -239,8 +236,8 @@ export class MarkdownEditor {
           smartIndentList: this.vault.getConfig("smartIndentList") !== false,
         }),
         keymap.of([
-          // Vor defaultKeymap, das z. B. Mod-Enter, Mod-i und Mod-/ anders belegt.
-          ...FORMATTING_COMMANDS.filter((c) => c.key).map((c) => ({ key: c.key, run: c.run, preventDefault: true })),
+          // Befehlskürzel vor defaultKeymap, das z. B. Mod-Enter, Mod-i und Mod-/ anders belegt.
+          { any: (_view, evt) => this.app.handleHotkey(evt) },
           ...defaultKeymap,
           ...historyKeymap,
           ...searchKeymap,

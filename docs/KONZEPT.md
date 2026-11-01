@@ -189,7 +189,7 @@ obsidian-web/
 | 1 ✅ | **Sync-MVP:** OPFS-Speicher, `Vault`, Datei-Explorer, CM6-Quellmodus, Teil-Shim `obsidian`, remotely-save (siehe Abschnitt 8) | Vault im Browser bearbeiten und mit Desktop und Mobile synchronisieren |
 | 2 ✅ | `markdown`-Syntax, Lesemodus, Linkauflösung, `MetadataCache`-Index (Worker + IndexedDB-Cache), Backlinks | Wikilinks klickbar, Backlinks |
 | 3 🟡 | Live Preview ✅ (Formatierung, Überschriften, Listen, Aufgaben, Links, Wikilinks, Bilder, Tabellen, Codeblöcke, Tags, Highlights, Kommentare, Frontmatter, LaTeX, Callouts, Embeds von Notizen/Abschnitten/Blöcken/Medien, Mermaid), Fußnoten; offen: Properties-Ansicht | Editor fühlt sich an wie Obsidian |
-| 4 🟡 | Befehlspalette ✅, Schnellwechsler ✅, Hotkeys (fest) ✅; offen: Tabs, Splits, rechte Sidebar, `workspace.json`, `hotkeys.json` | Komplette Arbeitsoberfläche |
+| 4 🟡 | Befehlspalette ✅, Schnellwechsler ✅, Hotkeys aus `hotkeys.json` ✅; offen: Tabs, Splits, rechte Sidebar, `workspace.json`, Hotkey-Einstellungen | Komplette Arbeitsoberfläche |
 | 5 🟡 | Suche ✅, Gliederung ✅, ausgehende Links ✅, Umbenennen mit Link-Update ✅; offen: Tags-Ansicht, Properties, Lesezeichen, Tagesnotizen, Vorlagen | Funktionsgleich mit dem Kern von Obsidian |
 | 6 | Graph, Canvas, Themes und Snippets, Einstellungsdialog | Visuelle Vollständigkeit |
 | 7 | `obsidian`-Shim vervollständigen (Views, Editor-API, MetadataCache), Plugin-Verwaltung in den Einstellungen | Weitere Community-Plugins laufen |

@@ -1,4 +1,6 @@
-export type Modifier = "Mod" | "Ctrl" | "Meta" | "Shift" | "Alt";
+import { type Modifier, normalizeModifiers } from "../core/hotkeys";
+
+export type { Modifier };
 
 export interface KeymapContext {
   modifiers: string | null;
@@ -19,7 +21,7 @@ export interface KeymapEventHandler {
 const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
 
 /** Modifier eines Ereignisses in Obsidians Schreibweise, z. B. `"Mod,Shift"` (Mod = Cmd bzw. Strg). */
-function eventModifiers(evt: KeyboardEvent): string {
+export function eventModifiers(evt: KeyboardEvent): string {
   const mods: string[] = [];
   if (isMac ? evt.metaKey : evt.ctrlKey) mods.push("Mod");
   if (isMac && evt.ctrlKey) mods.push("Ctrl");
@@ -27,13 +29,6 @@ function eventModifiers(evt: KeyboardEvent): string {
   if (evt.shiftKey) mods.push("Shift");
   if (evt.altKey) mods.push("Alt");
   return mods.join(",");
-}
-
-function normalizeModifiers(modifiers: Modifier[] | null): string | null {
-  if (!modifiers) return null;
-  const order: Modifier[] = ["Mod", "Ctrl", "Meta", "Shift", "Alt"];
-  const mapped = modifiers.map((m) => (m === (isMac ? "Meta" : "Ctrl") ? "Mod" : m));
-  return order.filter((m) => mapped.includes(m)).join(",");
 }
 
 /** Entspricht Obsidians `Scope`: Tastenkürzel, die gelten, solange der Scope oben auf dem Stapel liegt. */
@@ -45,7 +40,7 @@ export class Scope {
 
   /** `modifiers`/`key` null = jede Kombination bzw. jede Taste. */
   register(modifiers: Modifier[] | null, key: string | null, func: KeymapEventListener): KeymapEventHandler {
-    const handler: KeymapEventHandler = { scope: this, modifiers: normalizeModifiers(modifiers), key, func };
+    const handler: KeymapEventHandler = { scope: this, modifiers: modifiers && normalizeModifiers(modifiers, isMac), key, func };
     this.keys.push(handler);
     return handler;
   }

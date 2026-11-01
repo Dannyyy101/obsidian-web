@@ -98,7 +98,7 @@ für den Rest vor.
 | **Plugin-API** | `registerView`, `registerMarkdownPostProcessor`, `registerEditorSuggest` sind leere Stubs. `Editor` und `MarkdownView` decken die gängigen Methoden ab, `Workspace` kennt aber noch keine Splits und Seitenleisten-Leaves. |
 | **Suche** | Es fehlen `OR`, reguläre Ausdrücke, `line:`, `block:`, `section:`, Groß-/Kleinschreibung beachten, Sortieroptionen und Suchen & Ersetzen. |
 | **Einstellungen** | Es fehlen Tastenkürzel, Core-Plugins an/aus, Verwaltung der Community-Plugins (installieren, aktivieren, deaktivieren) und Dateien & Anhänge vollständig. |
-| **Tastenkürzel** | Sie sind fest eingebaut; `hotkeys.json` wird nicht gelesen. |
+| **Tastenkürzel** | Eigene Kürzel aus `hotkeys.json` gelten, ändern lassen sie sich aber nur in der Datei. Die Einstellungsseite dafür fehlt. Kürzel, die der Browser selbst belegt (Cmd/Strg+T, +W, +N), kommen nicht an. |
 | **Arbeitsbereich** | Tabs gibt es, Splits, angeheftete und gestapelte Tabs sowie Pop-out-Fenster fehlen. |
 | **Frontmatter** | Es erscheint nur als Text. Die Properties-Ansicht mit Typen (`types.json`) fehlt. |
 | **HTML in Notizen** | HTML erscheint als Text. Zum Rendern braucht es einen Sanitizer. |
@@ -147,7 +147,7 @@ für den Rest vor.
 | Feature | Status |
 |---|---|
 | Community-Themes und CSS-Snippets aus `.obsidian/themes` und `snippets` | ⬜ |
-| Tastenkürzel aus `hotkeys.json` samt Einstellungsseite | ⬜ |
+| Tastenkürzel aus `hotkeys.json` samt Einstellungsseite | 🟡 `hotkeys.json` wird gelesen, die Einstellungsseite fehlt |
 | Community-Plugins installieren, aktivieren und deaktivieren | ⬜ |
 | Vollständigere Plugin-API (siehe Abschnitt 2) | ⬜ |
 | Oberfläche in weiteren Sprachen (derzeit nur Deutsch) | ⬜ |
