@@ -155,7 +155,7 @@ E2E-Grundgerüst, Omnisearch, `hotkeys.json`, mobile Schubladen.
 
 | Feature | Status | Stufe | E2E | Anmerkung |
 |---|---|---|---|---|
-| Einstellungen: Editor, Dateien & Links, Darstellung | 🟡 | A · [#13], [#20] | | Dateien & Anhänge unvollständig |
+| Einstellungen: Editor, Dateien & Links, Darstellung | 🟡 | A · [#20] | ✓ | Dateien & Anhänge unvollständig |
 | Tastenkürzel aus `hotkeys.json` | 🟡 | C · [#31] | | Eigene Kürzel gelten, die Einstellungsseite fehlt. Vom Browser belegte Kürzel (Cmd/Strg+T, +W, +N) kommen nicht an |
 | Core-Plugins an/aus | ⬜ | C · [#32] | | |
 | Community-Themes und CSS-Snippets | ⬜ | C · [#33] | | Aus `.obsidian/themes` und `snippets` |
@@ -193,7 +193,7 @@ E2E-Grundgerüst, Omnisearch, `hotkeys.json`, mobile Schubladen.
 | Feature | Status | Stufe | E2E | Anmerkung |
 |---|---|---|---|---|
 | CI (Typecheck, Tests, Build, E2E bei jedem Push und PR) | ✅ | | | |
-| E2E-Tests mit Playwright in Chromium, Firefox, WebKit | 🟡 | A · [#13], [#14], [#15], [#16] | | Es fehlen Einstellungen, Embeds, Kontextmenüs und Sync |
+| E2E-Tests mit Playwright in Chromium, Firefox, WebKit | 🟡 | A · [#14], [#15], [#16] | | Es fehlen Embeds, Kontextmenüs und Sync |
 | ESLint mit Schichtgrenzen (laut Konzept) | ✅ | A · [#17] | | `pnpm lint` in CI und Pre-push-Hook, prüft auch `window`/`document` in den Worker-Schichten |
 | Fixture-Vault aus Obsidian Desktop für Kompatibilitätstests | ⬜ | A · [#18] | | `e2e/fixtures/vault/` ist von Hand geschrieben |
 | Manuelle Abnahme in Chrome, Firefox und Safari | ⬜ | A · [#11] | | Danach als Release-Gate je Stufe |
