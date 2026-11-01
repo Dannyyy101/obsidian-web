@@ -1,9 +1,8 @@
-# Typecheck, Tests, Build und E2E-Tests bei jedem Push und Pull Request.
+# Typecheck, Tests, Build und E2E-Tests bei jedem Pull Request. Auf main läuft nur noch der
+# Docker-Build, die Tests sind dort schon im PR gelaufen.
 name: CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
 
 concurrency:
