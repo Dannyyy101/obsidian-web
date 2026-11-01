@@ -1,5 +1,6 @@
 import { EditorSelection, type EditorState, type Line, type SelectionRange } from "@codemirror/state";
 import type { EditorView } from "@codemirror/view";
+import type { Hotkey } from "../core/hotkeys";
 
 /**
  * Formatierungsbefehle wie in Obsidian (`editor:toggle-bold`, `editor:insert-link` …). Jede
@@ -219,30 +220,30 @@ export const insertHorizontalRule = (view: EditorView) => insertBlock(view, "---
 export const insertTable = (view: EditorView) => insertBlock(view, "| {cur}{sel} |  |\n| --- | --- |\n|  |  |");
 
 export interface FormattingCommand {
-  /** Obsidians Befehls-ID, damit Hotkeys aus `hotkeys.json` später greifen. */
+  /** Obsidians Befehls-ID, damit Hotkeys aus `hotkeys.json` greifen. */
   id: string;
   name: string;
   icon: string;
   run: (view: EditorView) => boolean;
-  /** Standardkürzel wie in Obsidian (CodeMirror-Schreibweise). */
-  key?: string;
+  /** Standardkürzel wie in Obsidian. */
+  hotkeys?: Hotkey[];
 }
 
 export const FORMATTING_COMMANDS: FormattingCommand[] = [
-  { id: "editor:toggle-bold", name: "Fett umschalten", icon: "bold", run: toggleBold, key: "Mod-b" },
-  { id: "editor:toggle-italics", name: "Kursiv umschalten", icon: "italic", run: toggleItalics, key: "Mod-i" },
+  { id: "editor:toggle-bold", name: "Fett umschalten", icon: "bold", run: toggleBold, hotkeys: [{ modifiers: ["Mod"], key: "B" }] },
+  { id: "editor:toggle-italics", name: "Kursiv umschalten", icon: "italic", run: toggleItalics, hotkeys: [{ modifiers: ["Mod"], key: "I" }] },
   { id: "editor:toggle-strikethrough", name: "Durchgestrichen umschalten", icon: "strikethrough", run: toggleStrikethrough },
   { id: "editor:toggle-highlight", name: "Hervorheben umschalten", icon: "highlighter", run: toggleHighlight },
   { id: "editor:toggle-code", name: "Code umschalten", icon: "code", run: toggleCode },
   { id: "editor:toggle-inline-math", name: "Mathe-Formel umschalten", icon: "sigma", run: toggleInlineMath },
-  { id: "editor:toggle-comment", name: "Kommentar umschalten", icon: "percent", run: toggleComment, key: "Mod-/" },
+  { id: "editor:toggle-comment", name: "Kommentar umschalten", icon: "percent", run: toggleComment, hotkeys: [{ modifiers: ["Mod"], key: "/" }] },
   { id: "editor:clear-formatting", name: "Formatierung entfernen", icon: "eraser", run: clearFormatting },
-  { id: "editor:insert-link", name: "Markdown-Link einfügen", icon: "link", run: insertLink, key: "Mod-k" },
+  { id: "editor:insert-link", name: "Markdown-Link einfügen", icon: "link", run: insertLink, hotkeys: [{ modifiers: ["Mod"], key: "K" }] },
   { id: "editor:insert-wikilink", name: "Internen Link einfügen", icon: "link-2", run: (v) => insertWikilink(v) },
   { id: "editor:insert-embed", name: "Einbettung einfügen", icon: "file-input", run: (v) => insertWikilink(v, true) },
   { id: "editor:toggle-bullet-list", name: "Aufzählung umschalten", icon: "list", run: toggleBulletList },
   { id: "editor:toggle-numbered-list", name: "Nummerierte Liste umschalten", icon: "list-ordered", run: toggleNumberedList },
-  { id: "editor:toggle-checklist-status", name: "Aufgabe abhaken/umwandeln", icon: "list-checks", run: toggleChecklistStatus, key: "Mod-Enter" },
+  { id: "editor:toggle-checklist-status", name: "Aufgabe abhaken/umwandeln", icon: "list-checks", run: toggleChecklistStatus, hotkeys: [{ modifiers: ["Mod"], key: "Enter" }] },
   { id: "editor:toggle-blockquote", name: "Zitat umschalten", icon: "quote", run: toggleBlockquote },
   ...[0, 1, 2, 3, 4, 5, 6].map((level) => ({
     id: `editor:set-heading-${level}`,

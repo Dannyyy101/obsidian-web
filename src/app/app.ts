@@ -2,6 +2,7 @@ import type { ObsidianProtocolHandler } from "../api/plugin";
 import { PluginManager } from "../api/plugin-manager";
 import { Commands } from "../core/commands";
 import { FileManager } from "../core/file-manager";
+import { HotkeyManager, type Modifier } from "../core/hotkeys";
 import { MetadataCache, type MetadataParser, type MetadataStore } from "../core/metadata-cache";
 import type { TFile, Vault } from "../core/vault";
 import { join } from "../shared/path";
@@ -21,7 +22,7 @@ import { OutgoingLinksView } from "../ui/views/outgoing-links-view";
 import { OutlineView } from "../ui/views/outline-view";
 import { SearchView } from "../ui/views/search-view";
 import { FileExplorer } from "../ui/file-explorer";
-import { Keymap } from "../ui/keymap";
+import { eventModifiers, Keymap } from "../ui/keymap";
 import { Notice } from "../ui/notice";
 import { SettingsModal } from "../ui/settings-modal";
 import { coreSettingTabs } from "./core-settings";
@@ -33,6 +34,7 @@ export class App {
   workspace: Workspace;
   commands = new Commands();
   keymap = new Keymap();
+  hotkeyManager: HotkeyManager;
   /** Wie Obsidians `app.dom`: wichtige Container der Oberfläche. */
   dom: { appContainerEl: HTMLElement };
   fileManager: FileManager;
@@ -53,6 +55,8 @@ export class App {
   ) {
     this.vault = vault;
     this.appId = vault.getName();
+    this.hotkeyManager = new HotkeyManager(vault, this.commands, /Mac|iPhone|iPad/.test(navigator.platform));
+    void this.hotkeyManager.load();
     this.metadataCache = new MetadataCache(vault, options.metadataParser, options.metadataStore);
     this.fileManager = new FileManager(vault, this.metadataCache);
     this.workspace = new Workspace(this, containerEl);
@@ -92,7 +96,7 @@ export class App {
     vault.on("rename", (file, oldPath: string) => {
       this.saveLocalStorage(App.RECENT_KEY, this.getRecentFiles().map((p) => (p === oldPath ? file.path : p)));
     });
-    document.addEventListener("keydown", (evt) => this.onGlobalKey(evt));
+    document.addEventListener("keydown", (evt) => this.handleHotkey(evt));
   }
 
   /** Editor des aktiven Tabs. */
@@ -178,22 +182,25 @@ export class App {
   }
 
   private registerCoreCommands() {
-    // Browser reservieren Cmd/Strg+T, +W und Strg+Tab für ihre eigenen Tabs → zusätzlich Alt.
-    this.commands.addCommand({ id: "workspace:new-tab", name: "Neuer Tab", callback: () => this.workspace.getLeaf("tab") });
+    const hotkey = (key: string, ...modifiers: Modifier[]) => [{ modifiers: ["Mod", ...modifiers] as Modifier[], key }];
+    // Browser reservieren Cmd/Strg+T, +W, +N und Strg+Tab für ihre eigenen Tabs → zusätzlich Alt.
+    this.commands.addCommand({ id: "workspace:new-tab", name: "Neuer Tab", hotkeys: hotkey("T", "Alt"), callback: () => this.workspace.getLeaf("tab") });
     this.commands.addCommand({
       id: "workspace:close",
       name: "Aktuellen Tab schließen",
+      hotkeys: hotkey("W", "Alt"),
       callback: () => this.workspace.activeLeaf && void this.workspace.closeLeaf(this.workspace.activeLeaf),
     });
-    this.commands.addCommand({ id: "workspace:next-tab", name: "Zum nächsten Tab", callback: () => this.workspace.cycleLeaf(1) });
-    this.commands.addCommand({ id: "workspace:previous-tab", name: "Zum vorherigen Tab", callback: () => this.workspace.cycleLeaf(-1) });
-    this.commands.addCommand({ id: "file-explorer:new-file", name: "Neue Notiz anlegen", callback: () => void this.createNewNote() });
+    this.commands.addCommand({ id: "workspace:next-tab", name: "Zum nächsten Tab", hotkeys: hotkey("ArrowRight", "Alt"), callback: () => this.workspace.cycleLeaf(1) });
+    this.commands.addCommand({ id: "workspace:previous-tab", name: "Zum vorherigen Tab", hotkeys: hotkey("ArrowLeft", "Alt"), callback: () => this.workspace.cycleLeaf(-1) });
+    this.commands.addCommand({ id: "file-explorer:new-file", name: "Neue Notiz anlegen", hotkeys: hotkey("N", "Alt"), callback: () => void this.createNewNote() });
     this.commands.addCommand({ id: "file-explorer:new-file-in-new-pane", name: "Neue Notiz in neuem Tab", callback: () => void this.createNewNote(undefined, true) });
     this.commands.addCommand({ id: "app:toggle-left-sidebar", name: "Linke Seitenleiste ein-/ausblenden", callback: () => this.leftSidebar.toggle() });
     this.commands.addCommand({ id: "app:toggle-right-sidebar", name: "Rechte Seitenleiste ein-/ausblenden", callback: () => this.rightSidebar.toggle() });
     this.commands.addCommand({
       id: "global-search:open",
       name: "Suche: In allen Dateien suchen",
+      hotkeys: hotkey("F", "Shift"),
       callback: () => {
         this.leftSidebar.activate("search");
         this.searchView.focus();
@@ -208,6 +215,7 @@ export class App {
     this.commands.addCommand({
       id: "command-palette:open",
       name: "Befehlspalette: Öffnen",
+      hotkeys: hotkey("P"),
       callback: () => new CommandPalette(this).open(),
     });
     this.commands.addCommand({
@@ -222,6 +230,7 @@ export class App {
     this.commands.addCommand({
       id: "markdown:toggle-preview",
       name: "Lesemodus umschalten",
+      hotkeys: hotkey("E"),
       checkCallback: (checking) => {
         if (!this.editor.getFile()) return false;
         if (!checking) void this.editor.toggleReadingView();
@@ -260,6 +269,7 @@ export class App {
         id: command.id,
         name: command.name,
         icon: command.icon,
+        hotkeys: command.hotkeys,
         checkCallback: (checking) => {
           if (!this.editor.getFile() || this.editor.isReading()) return false;
           if (!checking) command.run(this.editor.editor.cm);
@@ -270,9 +280,20 @@ export class App {
     this.commands.addCommand({
       id: "switcher:open",
       name: "Schnellwechsler: Öffnen",
+      hotkeys: hotkey("O"),
       callback: () => new QuickSwitcher(this).open(),
     });
-    this.commands.addCommand({ id: "app:open-settings", name: "Einstellungen öffnen", callback: () => this.setting.open() });
+    this.commands.addCommand({ id: "app:open-settings", name: "Einstellungen öffnen", hotkeys: hotkey(","), callback: () => this.setting.open() });
+    this.commands.addCommand({
+      id: "editor:save-file",
+      name: "Aktuelle Datei speichern",
+      hotkeys: hotkey("S"),
+      checkCallback: (checking) => {
+        if (!this.editor.getFile()) return false;
+        if (!checking) void this.editor.save();
+        return true;
+      },
+    });
     this.commands.addCommand({
       id: "obsidian-web:open-uri",
       name: "Obsidian-URI ausführen (obsidian://…)",
@@ -283,41 +304,15 @@ export class App {
     });
   }
 
-  private onGlobalKey(evt: KeyboardEvent) {
-    const mod = evt.metaKey || evt.ctrlKey;
-    if (!mod) return;
-    if (evt.altKey) {
-      // `code` statt `key`: Alt verändert auf dem Mac das Zeichen (Alt+T → †).
-      const tabActions: Record<string, string> = {
-        KeyT: "workspace:new-tab",
-        KeyN: "file-explorer:new-file",
-        KeyW: "workspace:close",
-        ArrowRight: "workspace:next-tab",
-        ArrowLeft: "workspace:previous-tab",
-      };
-      const id = tabActions[evt.code];
-      if (!id) return;
-      evt.preventDefault();
-      this.commands.executeCommandById(id);
-      return;
-    }
-    if (evt.shiftKey) {
-      if (evt.key.toLowerCase() !== "f") return;
-      evt.preventDefault();
-      this.commands.executeCommandById("global-search:open");
-      return;
-    }
-    const actions: Record<string, () => unknown> = {
-      p: () => this.commands.executeCommandById("command-palette:open"),
-      o: () => this.commands.executeCommandById("switcher:open"),
-      e: () => this.commands.executeCommandById("markdown:toggle-preview"),
-      ",": () => this.setting.open(),
-      s: () => this.editor.save(),
-    };
-    const action = actions[evt.key.toLowerCase()];
-    if (!action) return;
+  /**
+   * Führt den Befehl aus, an den die Tasten gebunden sind (Standard oder `hotkeys.json`). Läuft im
+   * Editor vor CodeMirrors eigenen Kürzeln und sonst auf `document`.
+   */
+  handleHotkey(evt: KeyboardEvent): boolean {
+    if (evt.defaultPrevented || evt.isComposing) return false;
+    if (!this.hotkeyManager.onTrigger({ modifiers: eventModifiers(evt), key: evt.key, code: evt.code })) return false;
     evt.preventDefault();
-    action();
+    return true;
   }
 
   /**

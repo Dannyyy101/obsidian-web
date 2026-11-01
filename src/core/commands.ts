@@ -1,9 +1,12 @@
+import type { Hotkey } from "./hotkeys";
+
 // Entspricht Obsidians `Command`. Editor-Callbacks folgen, sobald es eine Editor-Fassade gibt.
 export interface Command {
   id: string;
   name: string;
   icon?: string;
-  hotkeys?: { modifiers: string[]; key: string }[];
+  /** Standardkürzel; `hotkeys.json` kann sie ersetzen. */
+  hotkeys?: Hotkey[];
   callback?: () => unknown;
   checkCallback?: (checking: boolean) => boolean | void;
 }
