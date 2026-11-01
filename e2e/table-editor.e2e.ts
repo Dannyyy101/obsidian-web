@@ -1,4 +1,4 @@
-import { activeEditor, expect, openFromExplorer, readVaultFile, test } from "./fixtures";
+import { activeEditor, expect, openFromExplorer, saveAndReadVaultFile, test } from "./fixtures";
 
 test("Tabellen lassen sich in der Live Preview bearbeiten und erweitern", async ({ vault: page, vaultName }) => {
   await openFromExplorer(page, "Projekte/Plan.md");
@@ -27,6 +27,6 @@ test("Tabellen lassen sich in der Live Preview bearbeiten und erweitern", async 
   await cell(0, 0).click();
 
   await expect
-    .poll(() => readVaultFile(page, vaultName, "Projekte/Plan.md"), { timeout: 10_000 })
+    .poll(() => saveAndReadVaultFile(page, vaultName, "Projekte/Plan.md"))
     .toMatch(/^\| A \| Neu \| B \|\n\| --- \| --- \| --- \|\n\| 1 \|  \| zwei \|\n\| drei \|  \| vier \|\n/);
 });

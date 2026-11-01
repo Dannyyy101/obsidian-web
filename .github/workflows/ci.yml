@@ -50,9 +50,14 @@ jobs:
             !dist/bundled-plugins
           retention-days: 7
 
+  # Ein Job pro Browser, damit sie parallel laufen und jeder nur seinen Browser installiert.
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
     steps:
       - uses: actions/checkout@v4
 
@@ -71,13 +76,13 @@ jobs:
           key: bundled-plugins-${{ hashFiles('scripts/fetch-plugins.mjs') }}
 
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium firefox webkit
-      - run: pnpm test:e2e
+      - run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
+      - run: pnpm test:e2e --project=${{ matrix.browser }}
 
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.browser }}
           path: |
             playwright-report
             test-results

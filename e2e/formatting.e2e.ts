@@ -1,4 +1,4 @@
-import { activeEditor, expect, openFromExplorer, readVaultFile, test } from "./fixtures";
+import { activeEditor, expect, openFromExplorer, saveAndReadVaultFile, test } from "./fixtures";
 
 test("Cmd/Strg+B formatiert fett, das Kontextmenü bietet Formatierungen an", async ({ vault: page, vaultName }) => {
   await openFromExplorer(page, "Projekte/Plan.md");
@@ -15,6 +15,6 @@ test("Cmd/Strg+B formatiert fett, das Kontextmenü bietet Formatierungen an", as
   await expect(page.locator(".menu")).toHaveCount(0);
 
   await expect
-    .poll(() => readVaultFile(page, vaultName, "Projekte/Plan.md"), { timeout: 10_000 })
+    .poll(() => saveAndReadVaultFile(page, vaultName, "Projekte/Plan.md"))
     .toContain("## Zurück zu [[Willkommen]]. eins **zwei**");
 });
