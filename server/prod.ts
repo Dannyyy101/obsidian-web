@@ -11,10 +11,15 @@ import { handleProxyRequest, PROXY_PATH } from "./cors-proxy.ts";
 const PORT = Number(process.env.PORT ?? 3000);
 const HOST = process.env.HOST ?? "0.0.0.0";
 const ROOT = resolve(process.env.DIST_DIR ?? "dist");
-// Optional: kommagetrennte Liste erlaubter Ziel-Hosts für den Proxy, z. B. "s3.example.com,dav.example.com".
-// Leer bedeutet: alle Hosts erlaubt.
+// Pflicht: kommagetrennte Liste erlaubter Ziel-Hosts für den Proxy, z. B. "s3.example.com,dav.example.com".
+// Sie gilt auch für jedes Weiterleitungsziel. "*" erlaubt bewusst alle Hosts, auch im internen Netz.
 const ALLOWED_HOSTS = (process.env.PROXY_ALLOWED_HOSTS ?? "")
   .split(",").map((h) => h.trim().toLowerCase()).filter(Boolean);
+if (!ALLOWED_HOSTS.length) {
+  console.error("PROXY_ALLOWED_HOSTS fehlt: Hosts für /__proxy angeben (z. B. s3.example.com) oder \"*\" für alle.");
+  process.exit(1);
+}
+const PROXY_HOSTS = ALLOWED_HOSTS.includes("*") ? [] : ALLOWED_HOSTS;
 
 const MIME: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
@@ -33,19 +38,6 @@ const MIME: Record<string, string> = {
   ".wasm": "application/wasm",
   ".webmanifest": "application/manifest+json",
 };
-
-/** Gibt den abgelehnten Ziel-Host zurück, oder undefined, wenn der Request durchdarf. */
-function blockedProxyHost(req: IncomingMessage): string | undefined {
-  if (!ALLOWED_HOSTS.length) return undefined;
-  const target = req.headers["x-proxy-target"];
-  if (typeof target !== "string") return undefined; // handleProxyRequest antwortet mit 400
-  try {
-    const host = new URL(target).hostname.toLowerCase();
-    return ALLOWED_HOSTS.includes(host) ? undefined : host;
-  } catch {
-    return undefined;
-  }
-}
 
 function serveFile(res: ServerResponse, file: string, immutable: boolean) {
   res.statusCode = 200;
@@ -93,13 +85,7 @@ const server = createServer((req, res) => {
     return;
   }
   if (pathname === PROXY_PATH) {
-    const blocked = blockedProxyHost(req);
-    if (blocked) {
-      res.statusCode = 403;
-      res.end(`proxy target not allowed: ${blocked} (PROXY_ALLOWED_HOSTS)`);
-      return;
-    }
-    void handleProxyRequest(req, res);
+    void handleProxyRequest(req, res, PROXY_HOSTS);
     return;
   }
   void serveStatic(req, res).catch((err) => {

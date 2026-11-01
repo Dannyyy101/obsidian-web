@@ -85,7 +85,7 @@ docker compose up -d --build
 | `PUBLIC_HOST` | Public domain of the app (without `https://`) |
 | `ZITADEL_ISSUER`, `ZITADEL_CLIENT_ID`, `ZITADEL_CLIENT_SECRET` | OIDC app in Zitadel, redirect URI `https://<PUBLIC_HOST>/oauth2/callback` |
 | `COOKIE_SECRET` | 32 random bytes for the session cookie |
-| `PROXY_ALLOWED_HOSTS` | Optional comma-separated allowlist of hosts the proxy may reach |
+| `PROXY_ALLOWED_HOSTS` | Required comma-separated allowlist of hosts the proxy may reach (also checked for redirects); `*` allows all hosts. The server refuses to start without it |
 
 ## Project structure
 

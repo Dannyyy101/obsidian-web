@@ -27,7 +27,7 @@ import { TagSuggest } from "./suggest/tag-suggest";
 import { livePreview, sourceModeDecorations } from "./live-preview/decorations";
 import { codeHighlightStyle, codeLanguages } from "./render/code";
 import { renderMarkdown } from "./render/markdown";
-import { type LivePreviewHost, mimeType } from "./live-preview/host";
+import { type LivePreviewHost, resourceUrl } from "./live-preview/host";
 
 const SAVE_DELAY_MS = 2000;
 
@@ -374,14 +374,14 @@ export class MarkdownEditor {
     return this.app.metadataCache.getFirstLinkpathDest(linktext, sourcePath || this.file?.path || "");
   }
 
-  /** Datei aus dem Vault als Blob-URL (zwischengespeichert, bis sich die Datei ändert). */
+  /** Datei aus dem Vault als URL (siehe `resourceUrl`, zwischengespeichert, bis sich die Datei ändert). */
   private async loadResource(linkpath: string, sourcePath?: string): Promise<string | null> {
     const file = this.resolve(linkpath, sourcePath);
     if (!file) return null;
     const cached = this.imageUrls.get(file.path);
     if (cached?.mtime === file.stat.mtime) return cached.url;
     if (cached) URL.revokeObjectURL(cached.url);
-    const url = URL.createObjectURL(new Blob([await this.vault.readBinary(file)], { type: mimeType(file.extension) }));
+    const url = resourceUrl(await this.vault.readBinary(file), file.extension);
     this.imageUrls.set(file.path, { mtime: file.stat.mtime, url });
     return url;
   }

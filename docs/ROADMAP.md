@@ -77,7 +77,7 @@ E2E-Grundgerüst, Omnisearch, `hotkeys.json`, mobile Schubladen.
 | Änderungszeiten (`mtime`/`ctime`) dauerhaft in IndexedDB | ✅ | | | Voraussetzung für korrekten Sync |
 | Unicode-Schreibweisen (NFC/NFD) | ✅ | | | Behebt den Safari-Fehler bei Umlauten |
 | remotely-save als unverändertes Original-Plugin | ✅ | A · [#16] | 🟡 | WebDAV/S3 direkt; Dropbox/OneDrive über Einstellungs-URI. E2E prüft nur das Laden, nicht den Sync |
-| CORS-Proxy für Plugin-Requests | ✅ | | | Dev-Server und Produktionsserver (`server/prod.ts`, optionale Host-Allowlist) |
+| CORS-Proxy für Plugin-Requests | ✅ | | | Dev-Server und Produktionsserver (`server/prod.ts`, Host-Allowlist als Pflicht) |
 | Deployment hinter Anmeldung | ✅ | | | `Dockerfile`, `deploy/docker-compose.yml` mit oauth2-proxy und Zitadel |
 | Lokale Ordner über File System Access (Chromium) | ⬜ | D · [#40] | | |
 | Vault als ZIP importieren und exportieren | ⬜ | D · [#41] | | |
