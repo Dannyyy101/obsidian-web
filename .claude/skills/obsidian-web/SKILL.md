@@ -66,8 +66,7 @@ Das ausführliche Konzept steht in `docs/KONZEPT.md`. Lies es, bevor du größer
 | `src/app/app.ts` | `App`: verbindet Vault, Workspace, Editor, Explorer, Settings, Plugins |
 | `server/cors-proxy.ts` | Vite-Middleware `/__proxy`: Ersatz für Electrons CORS-freies `requestUrl` |
 | `scripts/fetch-plugins.mjs` | Lädt mitgelieferte Plugins (remotely-save) nach `public/bundled-plugins/` |
-| `tests/fixtures/vault/` | Referenz-Vault, mit Obsidian Desktop erstellt |
-| `e2e/` | Playwright-Tests (`*.e2e.ts`) in Chromium, Firefox, WebKit; Helfer in `e2e/fixtures.ts`, Fixture-Vault in `e2e/fixtures/vault/` |
+| `e2e/` | Playwright-Tests (`*.e2e.ts`) in Chromium, Firefox, WebKit; Helfer in `e2e/fixtures.ts`, Fixture-Vault in `e2e/fixtures/vault/` (mit Obsidian Desktop angelegt, Notizen für die Tests ergänzt) |
 | `tests/fixtures/syntax/` | Syntax-Korpus: `name.md` + `name.html` + `name.cache.json` |
 
 ## Häufige Aufgaben
