@@ -1,8 +1,8 @@
 import type { Vault } from "../core/vault";
 
-/** Felder aus Obsidians `.obsidian/appearance.json`, die obsidian-web auswertet. */
+/** Fields from Obsidian's `.obsidian/appearance.json` that obsidian-web evaluates. */
 export interface AppearanceConfig {
-  /** "obsidian" = dunkel, "moonstone" = hell, "system" bzw. fehlend = Systemeinstellung */
+  /** "obsidian" = dark, "moonstone" = light, "system" or missing = system setting */
   theme?: string;
   baseFontSize?: number;
   textFontFamily?: string;
@@ -19,6 +19,8 @@ const FONT_VARS: [keyof AppearanceConfig, string][] = [
 const darkQuery = matchMedia("(prefers-color-scheme: dark)");
 let config: AppearanceConfig = {};
 let configVault: Vault | null = null;
+/** Pending `setAppearance` calls, run one after another so none overwrites another's change. */
+let writes: Promise<void> = Promise.resolve();
 
 function applyTheme() {
   const dark = config.theme === "obsidian" || (config.theme !== "moonstone" && darkQuery.matches);
@@ -41,15 +43,15 @@ function apply() {
   }
 }
 
-/** Hell/Dunkel nach System, bis ein Vault mit eigener Einstellung geladen ist. */
+/** Light/dark from the system until a vault with its own setting is loaded. */
 export function followSystemTheme(): void {
   darkQuery.addEventListener("change", applyTheme);
   applyTheme();
 }
 
 /**
- * Übernimmt Schriften, Schriftgröße und Theme aus `appearance.json` – so sieht der Vault aus wie in
- * Obsidian Desktop. Änderungen (auch per Sync) werden sofort angewendet.
+ * Applies fonts, font size and theme from `appearance.json`, so the vault looks like it does in
+ * Obsidian Desktop. Changes (including via sync) are applied immediately.
  */
 export async function loadAppearance(vault: Vault): Promise<void> {
   configVault = vault;
@@ -58,7 +60,7 @@ export async function loadAppearance(vault: Vault): Promise<void> {
     try {
       config = (await vault.adapter.exists(path)) ? JSON.parse(await vault.adapter.read(path)) : {};
     } catch (err) {
-      console.error(`${path} konnte nicht gelesen werden`, err);
+      console.error(`Could not read ${path}`, err);
       config = {};
     }
     apply();
@@ -67,16 +69,24 @@ export async function loadAppearance(vault: Vault): Promise<void> {
   await read();
 }
 
-/** Aktuelle Werte aus `appearance.json` (für den Einstellungsreiter „Darstellung“). */
+/** Current values from `appearance.json` (for the "Appearance" settings tab). */
 export function getAppearance(): AppearanceConfig {
   return { ...config };
 }
 
 /**
- * Setzt einen Wert in `appearance.json` (`undefined` entfernt ihn) und wendet ihn sofort an. Liest die
- * Datei vorher neu, damit Felder, die obsidian-web nicht kennt, und Änderungen per Sync erhalten bleiben.
+ * Sets a value in `appearance.json` (`undefined` removes it) and applies it immediately. Re-reads the
+ * file first, so fields obsidian-web does not know and changes made via sync are kept. Calls run one
+ * after another; otherwise two quick changes would both read the old file and the second would drop
+ * the first.
  */
-export async function setAppearance<K extends keyof AppearanceConfig>(key: K, value: AppearanceConfig[K]): Promise<void> {
+export function setAppearance<K extends keyof AppearanceConfig>(key: K, value: AppearanceConfig[K]): Promise<void> {
+  const run = writes.then(() => writeAppearance(key, value));
+  writes = run.catch(() => {});
+  return run;
+}
+
+async function writeAppearance<K extends keyof AppearanceConfig>(key: K, value: AppearanceConfig[K]): Promise<void> {
   const vault = configVault;
   if (!vault) return;
   const path = `${vault.configDir}/appearance.json`;
@@ -84,7 +94,7 @@ export async function setAppearance<K extends keyof AppearanceConfig>(key: K, va
   try {
     if (await vault.adapter.exists(path)) stored = JSON.parse(await vault.adapter.read(path));
   } catch (err) {
-    console.error(`${path} konnte nicht gelesen werden`, err);
+    console.error(`Could not read ${path}`, err);
   }
   if (value === undefined) delete stored[key];
   else stored[key] = value;
