@@ -1,5 +1,6 @@
-# Baut das Docker-Image. Auf main und bei Tags (v*) wird es nach ghcr.io gepusht,
-# bei Pull Requests nur gebaut, um das Dockerfile zu prüfen.
+# Builds the Docker image. On main and on tags (v*) it is pushed to ghcr.io, on pull requests it is
+# only built to check the Dockerfile. A push to main also writes the image tag (sha-<short commit SHA>)
+# into the infra repo (values/obsidian-web.yaml); Argo CD deploys exactly that build (GitOps).
 name: Docker
 
 on:
@@ -15,9 +16,11 @@ on:
       - scripts/**
       - server/**
 
+# Pull requests cancel their older runs; on main every run finishes, in commit order, so a newer
+# deployment is never overtaken by an older one.
 concurrency:
   group: docker-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
@@ -59,3 +62,40 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  deploy:
+    name: Update image tag in infra
+    needs: image
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      # Deploy key of Dannyyy101/infra with write access, stored here as the secret INFRA_DEPLOY_KEY
+      - uses: actions/checkout@v4
+        with:
+          repository: Dannyyy101/infra
+          ssh-key: ${{ secrets.INFRA_DEPLOY_KEY }}
+          path: infra
+      - name: Write the tag
+        working-directory: infra
+        env:
+          SHA: ${{ github.sha }}
+        run: |
+          yq -i ".image.tag = \"sha-${SHA::7}\"" values/obsidian-web.yaml
+          git diff
+      - name: Commit and push
+        working-directory: infra
+        env:
+          SHA: ${{ github.sha }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add values/obsidian-web.yaml
+          git diff --cached --quiet && exit 0
+          git commit -m "deploy(obsidian-web): ${SHA::7}" \
+            -m "https://github.com/${{ github.repository }}/commit/${SHA}"
+          # someone else may have pushed to infra in the meantime
+          for attempt in 1 2 3; do
+            git pull --rebase && git push && exit 0
+            sleep 5
+          done
+          exit 1
