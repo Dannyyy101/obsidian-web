@@ -1235,6 +1235,20 @@ textarea {
   border-radius: var(--radius-s);
 }
 
+.workspace-leaf-content[data-type="pdf"] {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--background-primary);
+}
+
+.workspace-leaf-content[data-type="pdf"] .pdf-container {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
 .video-embed video,
 .audio-embed audio {
   max-width: 100%;

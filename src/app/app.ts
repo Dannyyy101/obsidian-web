@@ -28,6 +28,7 @@ import { SettingsModal } from "../ui/settings-modal";
 import { coreSettingTabs } from "./core-settings";
 import { loadCorePlugins } from "../plugins";
 import { Workspace } from "../ui/workspace";
+import { WorkspaceLeaf } from "../ui/workspace-leaf";
 
 /** Entspricht Obsidians `App`: hält alle Teile zusammen und ist für Plugins `this.app`. */
 export class App {
@@ -175,14 +176,14 @@ export class App {
    * `newLeaf` öffnet in einem neuen Tab.
    */
   async openFileAt(file: TFile, from?: number, to?: number, newLeaf = false): Promise<void> {
-    if (file.extension !== "md") {
+    if (!WorkspaceLeaf.canOpen(file)) {
       new Notice(`Dateityp „.${file.extension}“ kann noch nicht geöffnet werden.`);
       return;
     }
     this.closeDrawers();
-    const { editor } = this.workspace.getLeaf(newLeaf);
-    await editor.openFile(file);
-    if (from !== undefined) await editor.scrollToRange(from, to);
+    const leaf = this.workspace.getLeaf(newLeaf);
+    await leaf.openFile(file);
+    if (from !== undefined && !leaf.customView) await leaf.editor.scrollToRange(from, to);
   }
 
   private registerCoreCommands() {

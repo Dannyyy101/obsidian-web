@@ -3,7 +3,9 @@ import type { TFile } from "../core/vault";
 import { MarkdownEditor } from "../editor/markdown-editor";
 import { Events } from "../shared/events";
 import { setIcon } from "./icons";
+import { Notice } from "./notice";
 import { MarkdownView } from "./markdown-view";
+import { PdfView } from "./views/pdf-view";
 
 let nextId = 0;
 
@@ -16,6 +18,8 @@ export interface LeafView {
   getViewType(): string;
   getDisplayText(): string;
   getIcon(): string;
+  /** Datei, die die Ansicht zeigt (wie Obsidians `FileView.file`), z. B. bei der PDF-Ansicht. */
+  getFile?(): TFile | null;
   /** Tab wird sichtbar bzw. verborgen. */
   onShow?(): void;
   onClose(): void;
@@ -37,7 +41,7 @@ export class WorkspaceLeaf extends Events {
   private active = false;
 
   constructor(
-    app: App,
+    private app: App,
     tabBarEl: HTMLElement,
     containerEl: HTMLElement,
     private onActivate: (leaf: WorkspaceLeaf) => void,
@@ -81,14 +85,17 @@ export class WorkspaceLeaf extends Events {
 
   /** Entspricht Obsidians `getViewState` (ohne Anheften: `pinned` gibt es noch nicht). */
   getViewState(): { type: string; state: Record<string, unknown>; active?: boolean; pinned?: boolean } {
-    if (this.customView) return { type: this.customView.getViewType(), state: {}, active: this.active };
+    if (this.customView) {
+      const path = this.customView.getFile?.()?.path;
+      return { type: this.customView.getViewType(), state: path ? { file: path } : {}, active: this.active };
+    }
     const file = this.editor.getFile();
     if (!file) return { type: "empty", state: {}, active: this.active };
     return { type: "markdown", state: { file: file.path, mode: this.markdownView.getMode() }, active: this.active, pinned: false };
   }
 
   getFile(): TFile | null {
-    return this.customView ? null : this.editor.getFile();
+    return this.customView ? (this.customView.getFile?.() ?? null) : this.editor.getFile();
   }
 
   getDisplayText(): string {
@@ -107,7 +114,8 @@ export class WorkspaceLeaf extends Events {
     this.onFile(this, this.getFile());
   }
 
-  private updateHeader() {
+  /** @internal Titel und Icon des Tabs neu setzen (z. B. nach dem Umbenennen der Datei). */
+  updateHeader() {
     const text = this.getDisplayText();
     this.titleEl.setText(text);
     setIcon(this.iconEl, this.customView?.getIcon() ?? "file-text");
@@ -124,10 +132,40 @@ export class WorkspaceLeaf extends Events {
     }
   }
 
-  /** `active: true` macht den Tab zusätzlich zum aktiven (wie Obsidians `OpenViewState.active`). */
-  async openFile(file: TFile, openState?: { active?: boolean }): Promise<void> {
-    await this.editor.openFile(file);
+  /**
+   * `active: true` macht den Tab zusätzlich zum aktiven, `eState.subpath` springt zu `#Überschrift`
+   * bzw. bei PDFs zu `#page=3` (wie Obsidians `OpenViewState`).
+   */
+  async openFile(file: TFile, openState?: { active?: boolean; eState?: { subpath?: string } }): Promise<void> {
+    const subpath = openState?.eState?.subpath;
+    if (file.extension === "pdf") await this.openPdf(file, subpath);
+    else {
+      // Zeigte der Tab zuletzt diese Notiz und dazwischen etwas anderes, meldet der Editor keinen Wechsel.
+      const same = this.editor.getFile() === file;
+      await this.editor.openFile(file);
+      if (same) this.setView(null);
+      if (subpath) this.editor.scrollToSubpath(subpath);
+    }
     if (openState?.active) this.onActivate(this);
+  }
+
+  /** Ob der Tab Dateien mit dieser Endung öffnen kann. */
+  static canOpen(file: TFile): boolean {
+    return file.extension === "md" || file.extension === "pdf";
+  }
+
+  private async openPdf(file: TFile, subpath = "") {
+    const view = this.customView instanceof PdfView ? this.customView : new PdfView(this.app, this);
+    try {
+      await view.load(file, subpath);
+    } catch (err) {
+      console.error(err);
+      new Notice(`„${file.name}“ konnte nicht geöffnet werden.`);
+      if (view !== this.customView) view.onClose();
+      return;
+    }
+    if (view === this.customView) this.onFile(this, file);
+    else this.setView(view);
   }
 
   async detach(): Promise<void> {
