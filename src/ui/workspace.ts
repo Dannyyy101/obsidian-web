@@ -273,7 +273,7 @@ export class Workspace extends Events {
     const layout: SavedLayout = {
       tabs: this.leaves.map((l) =>
         l.customView
-          ? { path: null, type: l.customView.getViewType() }
+          ? { path: l.getFile()?.path ?? null, type: l.customView.getViewType() }
           : { path: l.getFile()?.path ?? null, reading: l.editor.isReading() || undefined },
       ),
       active: this.activeLeaf ? this.leaves.indexOf(this.activeLeaf) : 0,
@@ -288,7 +288,7 @@ export class Workspace extends Events {
     try {
       for (const tab of layout?.tabs ?? []) {
         const creator = tab.type ? this.viewCreators.get(tab.type) : undefined;
-        if (creator) {
+        if (creator && !tab.path) {
           const leaf = this.createLeaf();
           leaf.setView(creator(leaf));
           continue;
@@ -331,13 +331,11 @@ export class Workspace extends Events {
         return;
       }
     }
-    if (file.extension !== "md") {
+    if (!WorkspaceLeaf.canOpen(file)) {
       new Notice(`Dateityp „.${file.extension}“ kann noch nicht geöffnet werden.`);
       return;
     }
-    const { editor } = this.getLeaf(newLeaf);
-    await editor.openFile(file);
-    if (subpath) editor.scrollToSubpath(subpath);
+    await this.getLeaf(newLeaf).openFile(file, { eState: { subpath } });
   }
 
   addRibbonIcon(icon: string, title: string, callback: (evt: MouseEvent) => unknown, settings = false) {
